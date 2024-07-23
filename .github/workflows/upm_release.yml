@@ -1,4 +1,4 @@
-name: Release Workflow
+name: UPM Release Workflow
 
 on:
   release:
