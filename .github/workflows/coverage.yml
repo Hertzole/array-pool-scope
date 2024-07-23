@@ -1,0 +1,102 @@
+name: Code coverage report
+on:
+  workflow_call:
+    secrets:
+      access_token:
+        required: true
+    inputs:
+      net_test_reports:
+        type: string
+        required: false
+        default: ''
+
+jobs:
+  generate:
+    name: Generate coverage report
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            5
+            6
+            7
+            8
+
+      - name: Get .NET test reports
+        if: ${{ inputs.net_test_reports != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: "${{ inputs.net_test_reports }}"
+          path: Coverage/net/
+
+      - name: Get Unity coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          path: Coverage/unity/
+          pattern: unity-*-coverage
+
+      - name: What do we have here
+        run: ls -R Coverage
+
+      # The test results have a different path than what report generator can read.
+      # We need to remove the github/workspace/ path.
+      - name: Fix paths
+        run: |
+          chmod +x ./ci/fix_paths.sh
+          ./ci/fix_paths.sh
+
+      - name: Generate report
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.4
+        with:
+          # .NET coverage reports are located in "Coverage/net/GUID/coverage.opencover.xml"
+          # Unity coverage reports are located in "Coverage/unity/unity-VERSION-coverage/Unity-opencov/Edit/PlayMode/"
+          reports: "Coverage/net/*/*.xml;Coverage/unity/*/Unity-opencov/*/*.xml"
+          targetdir: "Coverage/report"
+          reporttypes: "Html;Badges"
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: Coverage/report
+
+      - name: Move badges
+        run: |
+          mkdir -p ./docs/
+          mv Coverage/report/badge_branchcoverage.svg ./docs/
+          mv Coverage/report/badge_linecoverage.svg ./docs/
+          mv Coverage/report/badge_methodcoverage.svg ./docs/
+
+      - name: Commit badges
+        continue-on-error: true
+        run: |
+          git config --global --add safe.directory /__w/gamejolt.net/gamejolt.net
+          git config --global user.name 'github-bot'
+          git config --global user.email 'github-bot@users.noreply.github.com'
+          git fetch --all
+          git pull
+          git add ./docs/
+          git commit -am "docs: update coverage badges from '${{ github.event.head_commit.message }}'"
+          git push -f -u origin ${{ github.ref }}
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3.0.1
+        with:
+          path: Coverage/report
+
+      - name: Deploy GitHub Pages site
+        uses: actions/deploy-pages@v4.0.5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+            

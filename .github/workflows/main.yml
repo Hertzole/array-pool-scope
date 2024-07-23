@@ -1,0 +1,64 @@
+name: Test and Sync Unity Project
+
+on:
+  push:
+    paths:
+      - ".github/workflows/**"
+      - "ArrayPoolScope/**"
+      - "ArrayPoolScope.Tests/**"
+      - "Unity/**"
+      - "ci/**"
+    branches: ["master", "develop"]
+  pull_request:
+    types: ['opened', 'edited', 'reopened', 'synchronize']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  net_test:
+    name: Test .NET
+    uses: ./.github/workflows/net_test.yml
+
+  unity-sync:
+    name: Sync Unity Project
+    uses: ./.github/workflows/unity-sync.yml
+    secrets:
+      unity_license: ${{ secrets.UNITY_LICENSE }}
+      access_token: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      cache_key: LibraryFolder
+
+  unity-test:
+    name: Test Unity Project
+    needs: unity-sync
+    uses: ./.github/workflows/unity-test.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        unity-version:
+          - 2021.3.36f1
+          - 2022.1.24f1
+          - 2022.2.21f1
+          - 2022.3.22f1
+          - 2023.1.20f1
+          - 2023.2.16f1
+    secrets:
+      unity_license: ${{ secrets.UNITY_LICENSE }}
+      unity_email: ${{ secrets.UNITY_EMAIL }}
+      unity_password: ${{ secrets.UNITY_PASSWORD }}
+      access_token: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      unity_version: ${{ matrix.unity-version }}
+      test_results_name: "Test Results - Unity ${{ matrix.unity-version }}"
+
+  coverage:
+    name: Generate Coverage Report
+    needs: [unity-test, net_test]
+    if: github.event_name != 'pull_request' # Coverage shouldn't be generated for PRs
+    uses: ./.github/workflows/coverage.yml
+    secrets:
+      access_token: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      net_test_reports: ${{ needs.net_test.outputs.test_results }}

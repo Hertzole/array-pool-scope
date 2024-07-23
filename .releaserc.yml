@@ -1,0 +1,16 @@
+plugins:
+  - '@semantic-release/github'
+  - '@semantic-release/release-notes-generator'
+  - '@semantic-release/commit-analyzer'
+  - - '@semantic-release/exec'
+    - prepareCmd: "sed -i -e '/AssemblyVersion/s/>.*</>${nextRelease.version}</' ArrayPoolScope/ArrayPoolScope.csproj; sed -i -e '/<Version>/s/>.*</>${nextRelease.version}</' ArrayPoolScope/ArrayPoolScope.csproj"
+  - - '@semantic-release/changelog'
+    - changelogFile: 'CHANGELOG.md'
+  - - '@semantic-release/npm'
+    - npmPublish: false
+      pkgRoot: "Unity/Packages/se.hertzole.array-pool-scope"
+  - - '@semantic-release/git'
+    - assets:
+        - "ArrayPoolScope/ArrayPoolScope.csproj"
+        - "CHANGELOG.md"
+        - 'Unity/Packages/se.hertzole.array-pool-scope/package.json'
