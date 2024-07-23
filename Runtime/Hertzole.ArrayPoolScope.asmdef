@@ -1,0 +1,14 @@
+{
+    "name": "Hertzole.ArrayPoolScope",
+    "rootNamespace": "Hertzole.Buffers",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

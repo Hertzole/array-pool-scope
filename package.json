@@ -1,0 +1,26 @@
+{
+  "name": "se.hertzole.array-pool-scope",
+  "version": "1.0.0",
+  "displayName": "Array Pool Scope",
+  "description": "Array Pool Scope allows you to use ArrayPool in a scope-like manner.",
+  "unity": "2021.3",
+  "unityRelease": "0f1",
+  "documentationUrl": "https://github.com/Hertzole/array-pool-scope",
+  "changelogUrl": "https://github.com/Hertzole/array-pool-scope/blob/master/CHANGELOG.md",
+  "licensesUrl": "https://github.com/Hertzole/array-pool-scope/blob/master/LICENSE",
+  "keywords": [
+    "array",
+    "arraypool",
+    "scope",
+    "arrayscope",
+    "arraypoolscope",
+    "performance",
+    "pool",
+    "pooling"
+  ],
+  "author": {
+    "name": "Hertzole",
+    "email": "contact@hertzole.se",
+    "url": "https://www.hertzole.se"
+  }
+}

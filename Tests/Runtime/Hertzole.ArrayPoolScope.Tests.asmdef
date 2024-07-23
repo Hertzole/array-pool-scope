@@ -1,0 +1,20 @@
+{
+    "name": "Hertzole.ArrayPoolScope.Tests",
+    "rootNamespace": "",
+    "references": [
+        "Hertzole.ArrayPoolScope"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
