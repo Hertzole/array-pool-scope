@@ -91,6 +91,7 @@ namespace Hertzole.Buffers
 			}
 		}
 
+		/// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
 		public Enumerator GetEnumerator()
 		{
 			return new Enumerator(array, Count);

@@ -8,6 +8,7 @@
         <IsAotCompatible>true</IsAotCompatible>
         <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -31,6 +32,10 @@
     <!-- Nullable is not supported in .NET Standard 2.0 and below. Enable it for all other versions. -->
     <PropertyGroup Condition="'$(TargetFramework)' != 'netstandard2.0'">
         <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DocumentationFile>bin\Release\ArrayPoolScope.xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
