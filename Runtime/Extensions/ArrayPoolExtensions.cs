@@ -2,6 +2,9 @@
 
 namespace Hertzole.Buffers
 {
+	/// <summary>
+	///     Extensions related to <see cref="ArrayPoolScope{T}" />
+	/// </summary>
 	public static partial class ArrayPoolScopeExtensions
 	{
 		/// <summary>
