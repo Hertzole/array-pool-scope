@@ -149,6 +149,36 @@ namespace Hertzole.Buffers
 
 			return false;
 		}
+
+		/// <summary>
+		///     Returns the zero-based index of the first occurrence of a value in the array.
+		/// </summary>
+		/// <param name="item">The object to locate in the array.</param>
+		/// <returns>The zero-based index of the first occurrence of <c>item</c> within the entire array, if found; otherwise, -1.</returns>
+		public int IndexOf(T item)
+		{
+			return Array.IndexOf(array, item, 0, Count);
+		}
+
+		/// <summary>
+		///     Returns the zero-based index of the first occurrence of a value in the array using the specified comparer.
+		/// </summary>
+		/// <param name="item">The object to locate in the array.</param>
+		/// <param name="comparer">The comparer to use when comparing elements.</param>
+		/// <returns>The zero-based index of the first occurrence of <c>item</c> within the entire array, if found; otherwise, -1.</returns>
+		public int IndexOf(T item, IEqualityComparer<T> comparer)
+		{
+			for (int i = 0; i < Count; i++)
+			{
+				if (comparer.Equals(array[i], item))
+				{
+					return i;
+				}
+			}
+
+			return -1;
+		}
+
 		/// <summary>
 		///     Disposes this scope and returns the array to the pool.
 		/// </summary>

@@ -358,5 +358,77 @@ namespace ArrayPoolScope.Tests
 			// Assert
 			Assert.That(contains, Is.False);
 		}
+		
+		[Test]
+		public void IndexOf_ReturnsCorrectIndex()
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(100);
+			for (int i = 0; i < 100; i++)
+			{
+				scope[i] = random.Next(int.MinValue, int.MaxValue);
+			}
+
+			int value = scope[50];
+
+			// Act
+			int index = scope.IndexOf(value);
+
+			// Assert
+			Assert.That(index, Is.EqualTo(50));
+		}
+		
+		[Test]
+		public void IndexOf_WithComparer_ReturnsCorrectIndex()
+		{
+			// Arrange
+			using ArrayPoolScope<string> scope = new ArrayPoolScope<string>(100);
+			for (int i = 0; i < 100; i++)
+			{
+				scope[i] = Guid.NewGuid().ToString();
+			}
+
+			string value = scope[50];
+
+			// Act
+			int index = scope.IndexOf(value, StringComparer.Ordinal);
+
+			// Assert
+			Assert.That(index, Is.EqualTo(50));
+		}
+		
+		[Test]
+		public void IndexOf_ReturnsNegativeOne()
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(100);
+			for (int i = 0; i < 100; i++)
+			{
+				scope[i] = random.Next(1, int.MaxValue);
+			}
+
+			// Act
+			int index = scope.IndexOf(0);
+
+			// Assert
+			Assert.That(index, Is.EqualTo(-1));
+		}
+		
+		[Test]
+		public void IndexOf_WithComparer_ReturnsNegativeOne()
+		{
+			// Arrange
+			using ArrayPoolScope<string> scope = new ArrayPoolScope<string>(100);
+			for (int i = 0; i < 100; i++)
+			{
+				scope[i] = Guid.NewGuid().ToString();
+			}
+
+			// Act
+			int index = scope.IndexOf(Guid.NewGuid().ToString(), StringComparer.Ordinal);
+
+			// Assert
+			Assert.That(index, Is.EqualTo(-1));
+		}
 	}
 }
