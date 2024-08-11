@@ -9,16 +9,21 @@ using System.Collections.Generic;
 
 namespace Hertzole.Buffers
 {
+	/// <summary>
+	///     A scope that rents an array from an <see cref="ArrayPool{T}" /> and returns it when disposed.
+	/// </summary>
+	/// <typeparam name="T">The type of the elements in the array.</typeparam>
 	public readonly struct ArrayPoolScope<T> : IDisposable, IReadOnlyList<T>
 	{
 		internal readonly T[] array;
 		internal readonly ArrayPool<T> pool;
 		internal readonly bool clearArray;
 
+		/// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
 		public int Count { get; }
 
 		/// <summary>
-		///     Creates a new ArrayPoolScope with the given length from a pool.
+		///     Creates a new <c>ArrayPoolScope</c> with the given length from a pool.
 		/// </summary>
 		/// <param name="length">The length of the array.</param>
 		/// <param name="pool">If provided, it will get an array from that pool. Otherwise, it will use the <c>Shared</c> pool.</param>
@@ -37,6 +42,13 @@ namespace Hertzole.Buffers
 			this.clearArray = clearArray;
 		}
 
+		/// <summary>
+		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source array to
+		///     the new pooled array.
+		/// </summary>
+		/// <param name="array">The source array that will be copied from.</param>
+		/// <param name="pool">If provided, it will get an array from that pool. Otherwise, it will use the <c>Shared</c> pool.</param>
+		/// <param name="clearArray">Indicates whether the contents of the buffer should be cleared when disposed.</param>
 		public ArrayPoolScope(T[] array,
 #if NULLABLES
 			ArrayPool<T>? pool = null,
@@ -46,9 +58,10 @@ namespace Hertzole.Buffers
 			bool clearArray = false) : this((ICollection<T>) array, pool, clearArray) { }
 
 		/// <summary>
-		///     Creates a new ArrayPoolScope with the given array from a pool.
+		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source list to
+		///     the new pooled array.
 		/// </summary>
-		/// <param name="list">The list the array will be filled with from the start.</param>
+		/// <param name="list">The source list that will be copied from.</param>
 		/// <param name="pool">If provided, it will get an array from that pool. Otherwise, it will use the <c>Shared</c> pool.</param>
 		/// <param name="clearArray">Indicates whether the contents of the buffer should be cleared when disposed.</param>
 		public ArrayPoolScope(ICollection<T> list,
@@ -67,6 +80,8 @@ namespace Hertzole.Buffers
 			list.CopyTo(array, 0);
 		}
 
+		/// <inheritdoc cref="IReadOnlyList{T}.this" />
+		/// <exception cref="ArgumentOutOfRangeException">If the index is below <c>0</c> or outside the provided length.</exception>
 		public T this[int index]
 		{
 			get
@@ -187,6 +202,9 @@ namespace Hertzole.Buffers
 			pool.Return(array, clearArray);
 		}
 
+		/// <summary>
+		///     An enumerator for the pooled array.
+		/// </summary>
 		public struct Enumerator : IEnumerator<T>
 		{
 			private readonly T[] array;
@@ -194,6 +212,7 @@ namespace Hertzole.Buffers
 			private int index;
 			private T current;
 
+			/// <inheritdoc />
 			public T Current
 			{
 #if NULLABLES
@@ -212,6 +231,11 @@ namespace Hertzole.Buffers
 #endif
 			}
 
+			/// <summary>
+			///     Creates a new <c>Enumerator</c> for the given array with a set length.
+			/// </summary>
+			/// <param name="array">The array to enumerate.</param>
+			/// <param name="length">The length of the array.</param>
 			public Enumerator(T[] array, int length)
 			{
 				this.array = array;
@@ -224,6 +248,7 @@ namespace Hertzole.Buffers
 #endif
 			}
 
+			/// <inheritdoc />
 			public bool MoveNext()
 			{
 				if (index < length)
@@ -236,6 +261,7 @@ namespace Hertzole.Buffers
 				return false;
 			}
 
+			/// <inheritdoc />
 			public void Reset()
 			{
 				index = 0;
@@ -246,6 +272,8 @@ namespace Hertzole.Buffers
 #endif
 			}
 
+			/// <inheritdoc />
+			/// <remarks>This does nothing for this enumerator.</remarks>
 			public void Dispose() { }
 		}
 	}
