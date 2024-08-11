@@ -122,6 +122,34 @@ namespace Hertzole.Buffers
 		}
 
 		/// <summary>
+		///     Determines whether an element is in the array.
+		/// </summary>
+		/// <param name="item">The object to locate in the array.</param>
+		/// <returns><c>true</c> if <c>item</c> is found in the array; otherwise, <c>false</c>.</returns>
+		public bool Contains(T item)
+		{
+			return Array.IndexOf(array, item, 0, Count) >= 0;
+		}
+
+		/// <summary>
+		///     Determines whether an element is in the array using the specified comparer.
+		/// </summary>
+		/// <param name="item">The object to locate in the array.</param>
+		/// <param name="comparer">The comparer to use when comparing elements.</param>
+		/// <returns><c>true</c> if <c>item</c> is found in the array; otherwise, <c>false</c>.</returns>
+		public bool Contains(T item, IEqualityComparer<T> comparer)
+		{
+			for (int i = 0; i < Count; i++)
+			{
+				if (comparer.Equals(array[i], item))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+		/// <summary>
 		///     Disposes this scope and returns the array to the pool.
 		/// </summary>
 		public void Dispose()

@@ -130,7 +130,7 @@ namespace ArrayPoolScope.Tests
 				Assert.That(scope[i], Is.EqualTo(i));
 			}
 		}
-		
+
 		[Test]
 		public void GetIndexer_OutOfRange_ThrowsArgumentOutOfRangeException([Values(1, 5, 16, 30, 100)] int length)
 		{
@@ -142,7 +142,7 @@ namespace ArrayPoolScope.Tests
 			Assert.Throws<ArgumentOutOfRangeException>(() => _ = scope[length + 1]); // Test greater than length.
 			Assert.Throws<ArgumentOutOfRangeException>(() => _ = scope[-1]); // Test less than 0.
 		}
-		
+
 		[Test]
 		public void SetIndexer_OutOfRange_ThrowsArgumentOutOfRangeException([Values(1, 5, 16, 30, 100)] int length)
 		{
@@ -285,6 +285,78 @@ namespace ArrayPoolScope.Tests
 
 			// Assert
 			Assert.That(enumerator.Current, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void Contains_ReturnsTrue()
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(100);
+			for (int i = 0; i < 100; i++)
+			{
+				scope[i] = random.Next(int.MinValue, int.MaxValue);
+			}
+
+			int value = scope[50];
+
+			// Act
+			bool contains = scope.Contains(value);
+
+			// Assert
+			Assert.That(contains, Is.True);
+		}
+
+		[Test]
+		public void Contains_WithComparer_ReturnsTrue()
+		{
+			// Arrange
+			using ArrayPoolScope<string> scope = new ArrayPoolScope<string>(100);
+			for (int i = 0; i < 100; i++)
+			{
+				scope[i] = Guid.NewGuid().ToString();
+			}
+
+			string value = scope[50];
+
+			// Act
+			bool contains = scope.Contains(value, StringComparer.Ordinal);
+
+			// Assert
+			Assert.That(contains, Is.True);
+		}
+
+		[Test]
+		public void Contains_ReturnsFalse()
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(100);
+			for (int i = 0; i < 100; i++)
+			{
+				scope[i] = random.Next(1, int.MaxValue);
+			}
+
+			// Act
+			bool contains = scope.Contains(0);
+
+			// Assert
+			Assert.That(contains, Is.False);
+		}
+
+		[Test]
+		public void Contains_WithComparer_ReturnsFalse()
+		{
+			// Arrange
+			using ArrayPoolScope<string> scope = new ArrayPoolScope<string>(100);
+			for (int i = 0; i < 100; i++)
+			{
+				scope[i] = Guid.NewGuid().ToString();
+			}
+
+			// Act
+			bool contains = scope.Contains(Guid.NewGuid().ToString(), StringComparer.Ordinal);
+
+			// Assert
+			Assert.That(contains, Is.False);
 		}
 	}
 }
