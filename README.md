@@ -12,7 +12,7 @@ int length = 10;
 using (ArrayPoolScope<int> pool = new ArrayPoolScope<int>(length))
 {
     // For loop
-    for (int i = 0; i < pool.Length; i++)
+    for (int i = 0; i < pool.Count; i++)
     {
         pool.Array[i] = i;
         Console.WriteLine(pool.Array[i]);
@@ -34,10 +34,10 @@ ArrayPool<int> customPool = ArrayPool<int>.Create();
 using ArrayPoolScope<int> pool = new ArrayPoolScope<int>(length, customPool);
 
 // Get directly from pool
-using ArrayPoolScope<int> pool = ArrayPool<int>.RentScope(length);
+using ArrayPoolScope<int> pool = ArrayPool<int>.Shared.RentScope(length);
 
 // As span and memory
-using ArrayPoolScope<int> pool = ArrayPool<int>.RentScope(length);
+using ArrayPoolScope<int> pool = ArrayPool<int>.Shared.RentScope(length);
 Span<int> span = pool.AsSpan();
 Memory<int> memory = pool.AsMemory();
 ```
