@@ -576,6 +576,33 @@ namespace ArrayPoolScope.Tests
 		}
 		
 		[Test]
+		public void Shuffle_ReturnsShuffledArray()
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(100);
+			for (int i = 0; i < 100; i++)
+			{
+				scope[i] = i;
+			}
+
+			// Act
+			scope.Shuffle();
+
+			// Assert
+			bool isShuffled = false;
+			for (int i = 1; i < 100; i++)
+			{
+				if (scope[i - 1] != i - 1)
+				{
+					isShuffled = true;
+					break;
+				}
+			}
+
+			Assert.That(isShuffled, Is.True);
+		}
+		
+		[Test]
 		public void TrueForAll_ReturnsTrue()
 		{
 			// Arrange
@@ -607,6 +634,16 @@ namespace ArrayPoolScope.Tests
 
 			// Assert
 			Assert.That(all, Is.False);
+		}
+		
+		[Test]
+		public void TrueForAll_ThrowsArgumentNullException()
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(100);
+
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => scope.TrueForAll(null!));
 		}
 	}
 }

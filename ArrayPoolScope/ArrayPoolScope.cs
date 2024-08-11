@@ -19,6 +19,8 @@ namespace Hertzole.Buffers
 		internal readonly ArrayPool<T> pool;
 		internal readonly bool clearArray;
 
+		private static readonly Random internalRandom = new Random();
+		
 		/// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
 		public int Count { get; }
 
@@ -217,6 +219,29 @@ namespace Hertzole.Buffers
 		public void Sort(IComparer<T> comparer)
 		{
 			Array.Sort(array, 0, Count, comparer);
+		}
+
+		/// <summary>
+		/// Randomly shuffles the elements in the array.
+		/// </summary>
+		public void Shuffle()
+		{
+			Shuffle(internalRandom);
+		}
+
+		/// <summary>
+		/// Randomly shuffles the elements in the array using the provided random generator.
+		/// </summary>
+		/// <param name="random">The random generator.</param>
+		public void Shuffle(Random random)
+		{
+			for (int i = Count - 1; i > 0; i--)
+			{
+				int j = random.Next(i + 1);
+				T temp = array[i];
+				array[i] = array[j];
+				array[j] = temp;
+			}
 		}
 
 		/// <summary>
