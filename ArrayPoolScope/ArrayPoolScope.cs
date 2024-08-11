@@ -69,8 +69,26 @@ namespace Hertzole.Buffers
 
 		public T this[int index]
 		{
-			get { return array[index]; }
-			set { array[index] = value; }
+			get
+			{
+				// Casting to uint skips the bounds check.
+				if (index < 0 || (uint) index >= (uint) Count)
+				{
+					throw new ArgumentOutOfRangeException(nameof(index), "Index out of range.");
+				}
+
+				return array[index];
+			}
+			set
+			{
+				// Casting to uint skips the bounds check.
+				if (index < 0 || (uint) index >= (uint) Count)
+				{
+					throw new ArgumentOutOfRangeException(nameof(index), "Index out of range.");
+				}
+
+				array[index] = value;
+			}
 		}
 
 		public Enumerator GetEnumerator()

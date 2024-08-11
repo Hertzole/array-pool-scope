@@ -130,6 +130,30 @@ namespace ArrayPoolScope.Tests
 				Assert.That(scope[i], Is.EqualTo(i));
 			}
 		}
+		
+		[Test]
+		public void GetIndexer_OutOfRange_ThrowsArgumentOutOfRangeException([Values(1, 5, 16, 30, 100)] int length)
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(length);
+
+			// Assert
+			Assert.Throws<ArgumentOutOfRangeException>(() => _ = scope[length]); // Test equals to length.
+			Assert.Throws<ArgumentOutOfRangeException>(() => _ = scope[length + 1]); // Test greater than length.
+			Assert.Throws<ArgumentOutOfRangeException>(() => _ = scope[-1]); // Test less than 0.
+		}
+		
+		[Test]
+		public void SetIndexer_OutOfRange_ThrowsArgumentOutOfRangeException([Values(1, 5, 16, 30, 100)] int length)
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(length);
+
+			// Assert
+			Assert.Throws<ArgumentOutOfRangeException>(() => scope[length] = 0); // Test equals to length.
+			Assert.Throws<ArgumentOutOfRangeException>(() => scope[length + 1] = 0); // Test greater than length.
+			Assert.Throws<ArgumentOutOfRangeException>(() => scope[-1] = 0); // Test less than 0.
+		}
 
 		[Test]
 		public void Foreach_ReturnsCorrectValues([Values(1, 5, 16, 30, 100)] int length)
