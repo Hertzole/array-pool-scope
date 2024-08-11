@@ -33,13 +33,17 @@ pool.Dispose();
 ArrayPool<int> customPool = ArrayPool<int>.Create();
 using ArrayPoolScope<int> pool = new ArrayPoolScope<int>(length, customPool);
 
-// Get directly from pool
+// Get directly from pool.
 using ArrayPoolScope<int> pool = ArrayPool<int>.Shared.RentScope(length);
 
-// As span and memory
+// As span and memory.
 using ArrayPoolScope<int> pool = ArrayPool<int>.Shared.RentScope(length);
 Span<int> span = pool.AsSpan();
 Memory<int> memory = pool.AsMemory();
+
+// Get the array directly if needed. (you should avoid this, unless you really need the array)
+using ArrayPoolScope<int> pool = ArrayPool<int>.Shared.RentScope(length);
+int[] array = UnsafeArrayPool.GetArray(pool);
 ```
 
 ## 📦 Installation
