@@ -430,5 +430,25 @@ namespace ArrayPoolScope.Tests
 			// Assert
 			Assert.That(index, Is.EqualTo(-1));
 		}
+		
+		[Test]
+		public void Reverse_ReturnsReversedArray()
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(100);
+			for (int i = 0; i < 100; i++)
+			{
+				scope[i] = i;
+			}
+
+			// Act
+			scope.Reverse();
+
+			// Assert
+			for (int i = 0; i < 100; i++)
+			{
+				Assert.That(scope[i], Is.EqualTo(99 - i));
+			}
+		}
 	}
 }

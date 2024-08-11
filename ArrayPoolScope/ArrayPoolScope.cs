@@ -195,6 +195,14 @@ namespace Hertzole.Buffers
 		}
 
 		/// <summary>
+		///     Reverses the sequence of the elements in a range of elements in the array.
+		/// </summary>
+		public void Reverse()
+		{
+			Array.Reverse(array, 0, Count);
+		}
+
+		/// <summary>
 		///     Disposes this scope and returns the array to the pool.
 		/// </summary>
 		public void Dispose()
