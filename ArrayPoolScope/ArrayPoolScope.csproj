@@ -18,13 +18,14 @@
         <PackageId>Hertzole.ArrayPoolScope</PackageId>
         <PackageTags>Array,ArrayPool,Scope,ArrayScope,ArrayPoolScope,Performance,Pool,Pooling</PackageTags>
         <PackageProjectUrl>https://github.com/Hertzole/array-pool-scope</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/Hertzole/array-pool-scope/blob/master/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/Hertzole/array-pool-scope</RepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
 
     <ItemGroup>
         <None Include="..\README.md" Pack="true" PackagePath="\"/>
+        <None Include="..\LICENSE" Pack="true" PackagePath="\"/>
     </ItemGroup>
 
     <!-- Nullable is not supported in .NET Standard 2.0 and below. Enable it for all other versions. -->
