@@ -5,7 +5,8 @@ on:
     types: [published]
 
 jobs:
-  make-upm-release:
+  make-nuget-release:
+    name: Make NuGet Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
