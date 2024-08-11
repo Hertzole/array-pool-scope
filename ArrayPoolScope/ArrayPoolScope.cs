@@ -203,6 +203,23 @@ namespace Hertzole.Buffers
 		}
 
 		/// <summary>
+		///     Sorts the elements in the array. The sort compares the elements to each other using the default comparer.
+		/// </summary>
+		public void Sort()
+		{
+			Array.Sort(array, 0, Count, Comparer<T>.Default);
+		}
+
+		/// <summary>
+		///     Sorts the elements in the array. The sort compares the elements to each other using the specified comparer.
+		/// </summary>
+		/// <param name="comparer">The comparer to use when comparing elements.</param>
+		public void Sort(IComparer<T> comparer)
+		{
+			Array.Sort(array, 0, Count, comparer);
+		}
+
+		/// <summary>
 		///     Disposes this scope and returns the array to the pool.
 		/// </summary>
 		public void Dispose()

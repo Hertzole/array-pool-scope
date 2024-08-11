@@ -358,7 +358,7 @@ namespace ArrayPoolScope.Tests
 			// Assert
 			Assert.That(contains, Is.False);
 		}
-		
+
 		[Test]
 		public void IndexOf_ReturnsCorrectIndex()
 		{
@@ -377,7 +377,7 @@ namespace ArrayPoolScope.Tests
 			// Assert
 			Assert.That(index, Is.EqualTo(50));
 		}
-		
+
 		[Test]
 		public void IndexOf_WithComparer_ReturnsCorrectIndex()
 		{
@@ -396,7 +396,7 @@ namespace ArrayPoolScope.Tests
 			// Assert
 			Assert.That(index, Is.EqualTo(50));
 		}
-		
+
 		[Test]
 		public void IndexOf_ReturnsNegativeOne()
 		{
@@ -413,7 +413,7 @@ namespace ArrayPoolScope.Tests
 			// Assert
 			Assert.That(index, Is.EqualTo(-1));
 		}
-		
+
 		[Test]
 		public void IndexOf_WithComparer_ReturnsNegativeOne()
 		{
@@ -430,7 +430,7 @@ namespace ArrayPoolScope.Tests
 			// Assert
 			Assert.That(index, Is.EqualTo(-1));
 		}
-		
+
 		[Test]
 		public void Reverse_ReturnsReversedArray()
 		{
@@ -448,6 +448,130 @@ namespace ArrayPoolScope.Tests
 			for (int i = 0; i < 100; i++)
 			{
 				Assert.That(scope[i], Is.EqualTo(99 - i));
+			}
+		}
+
+		[Test]
+		public void Reverse_DoesNotReverseOutOfBounds()
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(100);
+			// The array should be 128 in size and therefor the last 28 elements should not be reversed.
+			for (int i = 0; i < scope.array.Length; i++)
+			{
+				scope.array[i] = i;
+			}
+
+			// Act
+			scope.Reverse();
+
+			// Assert
+			for (int i = 0; i < 100; i++)
+			{
+				Assert.That(scope.array[i], Is.EqualTo(99 - i));
+			}
+
+			for (int i = 100; i < 128; i++)
+			{
+				Assert.That(scope.array[i], Is.EqualTo(i));
+			}
+		}
+
+		[Test]
+		public void Sort_ReturnsSortedArray()
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(100);
+			for (int i = 0; i < 100; i++)
+			{
+				scope[i] = random.Next(int.MinValue, int.MaxValue);
+			}
+
+			// Act
+			scope.Sort();
+
+			// Assert
+			for (int i = 1; i < 100; i++)
+			{
+				Assert.That(scope[i - 1], Is.LessThanOrEqualTo(scope[i]));
+			}
+		}
+
+		[Test]
+		public void Sort_WithComparer_ReturnsSortedArray()
+		{
+			// Arrange
+			using ArrayPoolScope<string> scope = new ArrayPoolScope<string>(100);
+			for (int i = 0; i < 100; i++)
+			{
+				scope[i] = Guid.NewGuid().ToString();
+			}
+
+			// Act
+			scope.Sort(StringComparer.Ordinal);
+
+			// Assert
+			for (int i = 1; i < 100; i++)
+			{
+				Assert.That(string.Compare(scope[i - 1], scope[i], StringComparison.Ordinal), Is.LessThanOrEqualTo(0));
+			}
+		}
+
+		[Test]
+		public void Sort_DoesNotSortOutOfBounds()
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(100);
+			// The array should be 128 in size and therefor the last 28 elements should not be sorted.
+			for (int i = 0; i < scope.array.Length; i++)
+			{
+				scope.array[i] = random.Next(int.MinValue, int.MaxValue);
+			}
+
+			int[] originalLeftOver = new int[28];
+			Array.Copy(scope.array, 100, originalLeftOver, 0, 28);
+
+			// Act
+			scope.Sort();
+
+			// Assert
+			for (int i = 1; i < 100; i++)
+			{
+				Assert.That(scope.array[i - 1], Is.LessThanOrEqualTo(scope.array[i]));
+			}
+
+			for (int i = 100; i < 128; i++)
+			{
+				Assert.That(scope.array[i], Is.EqualTo(originalLeftOver[i - 100]));
+			}
+		}
+
+		[Test]
+		public void Sort_WithComparer_DoesNotSortOutOfBounds()
+		{
+			// Arrange
+			using ArrayPoolScope<string> scope = new ArrayPoolScope<string>(100);
+			// The array should be 128 in size and therefor the last 28 elements should not be sorted.
+			for (int i = 0; i < scope.array.Length; i++)
+			{
+				scope.array[i] = Guid.NewGuid().ToString();
+			}
+
+			string[] originalLeftOver = new string[28];
+			Array.Copy(scope.array, 100, originalLeftOver, 0, 28);
+
+			// Act
+			scope.Sort(StringComparer.Ordinal);
+
+			// Assert
+			for (int i = 1; i < 100; i++)
+			{
+				Assert.That(string.Compare(scope.array[i - 1], scope.array[i], StringComparison.Ordinal), Is.LessThanOrEqualTo(0));
+			}
+
+			for (int i = 100; i < 128; i++)
+			{
+				Assert.That(scope.array[i], Is.EqualTo(originalLeftOver[i - 100]));
 			}
 		}
 	}
