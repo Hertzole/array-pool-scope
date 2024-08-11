@@ -220,6 +220,37 @@ namespace Hertzole.Buffers
 		}
 
 		/// <summary>
+		///     Determines whether every element in the array matches the conditions defined by the specified predicate.
+		/// </summary>
+		/// <param name="match">The predicate that defines the conditions to check against the elements.</param>
+		/// <returns>
+		///     <c>true</c> if every element in array matches the conditions defined by the specified predicate; otherwise,
+		///     <c>false</c>. If there are no elements in the array, the return value is true.
+		/// </returns>
+		/// <exception cref="ArgumentNullException">match is null.</exception>
+		public bool TrueForAll(Predicate<T> match)
+		{
+#if NET6_0_OR_GREATER
+			ArgumentNullException.ThrowIfNull(match, nameof(match));
+#else
+			if (match == null)
+			{
+				throw new ArgumentNullException(nameof(match));
+			}
+#endif
+
+			for (int i = 0; i < Count; i++)
+			{
+				if (!match(array[i]))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		/// <summary>
 		///     Disposes this scope and returns the array to the pool.
 		/// </summary>
 		public void Dispose()

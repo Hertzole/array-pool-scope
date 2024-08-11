@@ -574,5 +574,39 @@ namespace ArrayPoolScope.Tests
 				Assert.That(scope.array[i], Is.EqualTo(originalLeftOver[i - 100]));
 			}
 		}
+		
+		[Test]
+		public void TrueForAll_ReturnsTrue()
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(100);
+			for (int i = 0; i < 100; i++)
+			{
+				scope[i] = i;
+			}
+
+			// Act
+			bool all = scope.TrueForAll(i => i < 100);
+
+			// Assert
+			Assert.That(all, Is.True);
+		}
+		
+		[Test]
+		public void TrueForAll_ReturnsFalse()
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(100);
+			for (int i = 0; i < 100; i++)
+			{
+				scope[i] = i;
+			}
+
+			// Act
+			bool all = scope.TrueForAll(i => i < 99);
+
+			// Assert
+			Assert.That(all, Is.False);
+		}
 	}
 }
