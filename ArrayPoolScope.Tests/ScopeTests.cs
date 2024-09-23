@@ -115,6 +115,84 @@ namespace ArrayPoolScope.Tests
 		}
 
 		[Test]
+		public void CreateFromSpan_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
+		{
+			// Arrange
+			Span<int> span = new int[length];
+			for (int i = 0; i < length; i++)
+			{
+				span[i] = random.Next(int.MinValue, int.MaxValue);
+			}
+
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(span, clearMode: clearArray);
+
+			// Assert
+			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Is.EquivalentTo(span.ToArray()));
+			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+		}
+
+		[Test]
+		public void CreateFromSpan_WithPool_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
+		{
+			// Arrange
+			Span<int> span = new int[length];
+			for (int i = 0; i < length; i++)
+			{
+				span[i] = random.Next(int.MinValue, int.MaxValue);
+			}
+
+			ArrayPool<int> pool = ArrayPool<int>.Create();
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(span, pool, clearArray);
+
+			// Assert
+			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Is.EquivalentTo(span.ToArray()));
+			Assert.That(scope.pool, Is.SameAs(pool));
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+		}
+
+		[Test]
+		public void CreateFromMemory_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
+		{
+			// Arrange
+			Memory<int> memory = new int[length];
+			for (int i = 0; i < length; i++)
+			{
+				memory.Span[i] = random.Next(int.MinValue, int.MaxValue);
+			}
+
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(memory, clearMode: clearArray);
+
+			// Assert
+			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Is.EquivalentTo(memory.ToArray()));
+			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+		}
+
+		[Test]
+		public void CreateFromMemory_WithPool_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
+		{
+			// Arrange
+			Memory<int> memory = new int[length];
+			for (int i = 0; i < length; i++)
+			{
+				memory.Span[i] = random.Next(int.MinValue, int.MaxValue);
+			}
+
+			ArrayPool<int> pool = ArrayPool<int>.Create();
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(memory, pool, clearArray);
+
+			// Assert
+			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Is.EquivalentTo(memory.ToArray()));
+			Assert.That(scope.pool, Is.SameAs(pool));
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+		}
+
+		[Test]
 		public void GetSetIndexer_ReturnsCorrectValue([Values(1, 5, 16, 30, 100)] int length)
 		{
 			// Arrange

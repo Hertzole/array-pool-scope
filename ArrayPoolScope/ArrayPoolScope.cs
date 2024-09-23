@@ -55,7 +55,7 @@ namespace Hertzole.Buffers
 #else
 			ArrayPool<T> pool = null,
 #endif
-			ArrayClearMode clearMode = ArrayClearMode.Auto) : this((ICollection<T>) array, pool, clearMode) { }
+			ArrayClearMode clearMode = ArrayClearMode.Auto) : this(array.AsSpan(), pool, clearMode) { }
 
 		/// <summary>
 		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source list to
@@ -79,6 +79,44 @@ namespace Hertzole.Buffers
 
 			list.CopyTo(array, 0);
 		}
+
+		/// <summary>
+		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source span to
+		///     the new pooled array.
+		/// </summary>
+		/// <param name="span">The source span that will be copied from.</param>
+		/// <param name="pool">If provided, it will get an array from that pool. Otherwise, it will use the <c>Shared</c> pool.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
+		public ArrayPoolScope(ReadOnlySpan<T> span,
+#if NULLABLES
+			ArrayPool<T>? pool = null,
+#else
+			ArrayPool<T> pool = null,
+#endif
+			ArrayClearMode clearMode = ArrayClearMode.Auto)
+		{
+			Count = span.Length;
+			this.pool = pool ?? ArrayPool<T>.Shared;
+			array = this.pool.Rent(Count);
+			this.clearMode = clearMode;
+
+			span.CopyTo(array);
+		}
+
+		/// <summary>
+		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source memory to
+		///     the new pooled array.
+		/// </summary>
+		/// <param name="memory">The source memory that will be copied from.</param>
+		/// <param name="pool">If provided, it will get an array from that pool. Otherwise, it will use the <c>Shared</c> pool.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
+		public ArrayPoolScope(ReadOnlyMemory<T> memory,
+#if NULLABLES
+			ArrayPool<T>? pool = null,
+#else
+			ArrayPool<T> pool = null,
+#endif
+			ArrayClearMode clearMode = ArrayClearMode.Auto) : this(memory.Span, pool, clearMode) { }
 
 		/// <inheritdoc cref="IReadOnlyList{T}.this" />
 		/// <exception cref="ArgumentOutOfRangeException">If the index is below <c>0</c> or outside the provided length.</exception>
