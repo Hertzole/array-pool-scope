@@ -17,10 +17,8 @@ namespace Hertzole.Buffers
 	{
 		internal readonly T[] array;
 		internal readonly ArrayPool<T> pool;
-		internal readonly bool clearArray;
+		internal readonly ArrayClearMode clearMode;
 
-		private static readonly Random internalRandom = new Random();
-		
 		/// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
 		public int Count { get; }
 
@@ -29,19 +27,19 @@ namespace Hertzole.Buffers
 		/// </summary>
 		/// <param name="length">The length of the array.</param>
 		/// <param name="pool">If provided, it will get an array from that pool. Otherwise, it will use the <c>Shared</c> pool.</param>
-		/// <param name="clearArray">Indicates whether the contents of the buffer should be cleared when disposed.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
 		public ArrayPoolScope(int length,
 #if NULLABLES
 			ArrayPool<T>? pool = null,
 #else
 			ArrayPool<T> pool = null,
 #endif
-			bool clearArray = false)
+			ArrayClearMode clearMode = ArrayClearMode.Auto)
 		{
 			Count = length;
 			this.pool = pool ?? ArrayPool<T>.Shared;
 			array = this.pool.Rent(length);
-			this.clearArray = clearArray;
+			this.clearMode = clearMode;
 		}
 
 		/// <summary>
@@ -50,14 +48,14 @@ namespace Hertzole.Buffers
 		/// </summary>
 		/// <param name="array">The source array that will be copied from.</param>
 		/// <param name="pool">If provided, it will get an array from that pool. Otherwise, it will use the <c>Shared</c> pool.</param>
-		/// <param name="clearArray">Indicates whether the contents of the buffer should be cleared when disposed.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
 		public ArrayPoolScope(T[] array,
 #if NULLABLES
 			ArrayPool<T>? pool = null,
 #else
 			ArrayPool<T> pool = null,
 #endif
-			bool clearArray = false) : this((ICollection<T>) array, pool, clearArray) { }
+			ArrayClearMode clearMode = ArrayClearMode.Auto) : this(array.AsSpan(), pool, clearMode) { }
 
 		/// <summary>
 		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source list to
@@ -65,22 +63,60 @@ namespace Hertzole.Buffers
 		/// </summary>
 		/// <param name="list">The source list that will be copied from.</param>
 		/// <param name="pool">If provided, it will get an array from that pool. Otherwise, it will use the <c>Shared</c> pool.</param>
-		/// <param name="clearArray">Indicates whether the contents of the buffer should be cleared when disposed.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
 		public ArrayPoolScope(ICollection<T> list,
 #if NULLABLES
 			ArrayPool<T>? pool = null,
 #else
 			ArrayPool<T> pool = null,
 #endif
-			bool clearArray = false)
+			ArrayClearMode clearMode = ArrayClearMode.Auto)
 		{
 			Count = list.Count;
 			this.pool = pool ?? ArrayPool<T>.Shared;
 			array = this.pool.Rent(Count);
-			this.clearArray = clearArray;
+			this.clearMode = clearMode;
 
 			list.CopyTo(array, 0);
 		}
+
+		/// <summary>
+		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source span to
+		///     the new pooled array.
+		/// </summary>
+		/// <param name="span">The source span that will be copied from.</param>
+		/// <param name="pool">If provided, it will get an array from that pool. Otherwise, it will use the <c>Shared</c> pool.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
+		public ArrayPoolScope(ReadOnlySpan<T> span,
+#if NULLABLES
+			ArrayPool<T>? pool = null,
+#else
+			ArrayPool<T> pool = null,
+#endif
+			ArrayClearMode clearMode = ArrayClearMode.Auto)
+		{
+			Count = span.Length;
+			this.pool = pool ?? ArrayPool<T>.Shared;
+			array = this.pool.Rent(Count);
+			this.clearMode = clearMode;
+
+			span.CopyTo(array);
+		}
+
+		/// <summary>
+		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source memory to
+		///     the new pooled array.
+		/// </summary>
+		/// <param name="memory">The source memory that will be copied from.</param>
+		/// <param name="pool">If provided, it will get an array from that pool. Otherwise, it will use the <c>Shared</c> pool.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
+		public ArrayPoolScope(ReadOnlyMemory<T> memory,
+#if NULLABLES
+			ArrayPool<T>? pool = null,
+#else
+			ArrayPool<T> pool = null,
+#endif
+			ArrayClearMode clearMode = ArrayClearMode.Auto) : this(memory.Span, pool, clearMode) { }
 
 		/// <inheritdoc cref="IReadOnlyList{T}.this" />
 		/// <exception cref="ArgumentOutOfRangeException">If the index is below <c>0</c> or outside the provided length.</exception>
@@ -126,6 +162,15 @@ namespace Hertzole.Buffers
 			return GetEnumerator();
 		}
 
+		/// <summary>
+		///     Copies the elements of the array to a new array.
+		/// </summary>
+		/// <param name="targetArray">The array to copy the elements to.</param>
+		public void CopyTo(Array targetArray)
+		{
+			Array.Copy(array, 0, targetArray, 0, Count);
+		}
+
 		/// <inheritdoc cref="System.Array.CopyTo(Array, int)" />
 		public void CopyTo(Array targetArray, int index)
 		{
@@ -156,6 +201,8 @@ namespace Hertzole.Buffers
 		/// <returns><c>true</c> if <c>item</c> is found in the array; otherwise, <c>false</c>.</returns>
 		public bool Contains(T item, IEqualityComparer<T> comparer)
 		{
+			ThrowHelper.ThrowIfNull(comparer, nameof(comparer));
+
 			for (int i = 0; i < Count; i++)
 			{
 				if (comparer.Equals(array[i], item))
@@ -185,6 +232,8 @@ namespace Hertzole.Buffers
 		/// <returns>The zero-based index of the first occurrence of <c>item</c> within the entire array, if found; otherwise, -1.</returns>
 		public int IndexOf(T item, IEqualityComparer<T> comparer)
 		{
+			ThrowHelper.ThrowIfNull(comparer, nameof(comparer));
+
 			for (int i = 0; i < Count; i++)
 			{
 				if (comparer.Equals(array[i], item))
@@ -222,19 +271,30 @@ namespace Hertzole.Buffers
 		}
 
 		/// <summary>
-		/// Randomly shuffles the elements in the array.
+		///     Sorts the elements in the array. The sort compares the elements to each other using the specified comparison.
 		/// </summary>
-		public void Shuffle()
+		/// <param name="comparison">The comparison to use when comparing elements.</param>
+		public void Sort(Comparison<T> comparison)
 		{
-			Shuffle(internalRandom);
+			Array.Sort(array, comparison);
 		}
 
 		/// <summary>
-		/// Randomly shuffles the elements in the array using the provided random generator.
+		///     Randomly shuffles the elements in the array.
+		/// </summary>
+		public void Shuffle()
+		{
+			Shuffle(ArrayPoolScopeHelpers.random);
+		}
+
+		/// <summary>
+		///     Randomly shuffles the elements in the array using the provided random generator.
 		/// </summary>
 		/// <param name="random">The random generator.</param>
 		public void Shuffle(Random random)
 		{
+			ThrowHelper.ThrowIfNull(random, nameof(random));
+
 			for (int i = Count - 1; i > 0; i--)
 			{
 				int j = random.Next(i + 1);
@@ -255,14 +315,7 @@ namespace Hertzole.Buffers
 		/// <exception cref="ArgumentNullException">match is null.</exception>
 		public bool TrueForAll(Predicate<T> match)
 		{
-#if NET6_0_OR_GREATER
-			ArgumentNullException.ThrowIfNull(match, nameof(match));
-#else
-			if (match == null)
-			{
-				throw new ArgumentNullException(nameof(match));
-			}
-#endif
+			ThrowHelper.ThrowIfNull(match, nameof(match));
 
 			for (int i = 0; i < Count; i++)
 			{
@@ -280,7 +333,7 @@ namespace Hertzole.Buffers
 		/// </summary>
 		public void Dispose()
 		{
-			pool.Return(array, clearArray);
+			pool.Return(array, ArrayPoolScopeHelpers.ShouldClear<T>(clearMode));
 		}
 
 		/// <summary>
