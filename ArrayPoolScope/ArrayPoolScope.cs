@@ -18,8 +18,6 @@ namespace Hertzole.Buffers
 		internal readonly T[] array;
 		internal readonly ArrayPool<T> pool;
 		internal readonly bool clearArray;
-
-		private static readonly Random internalRandom = new Random();
 		
 		/// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
 		public int Count { get; }
@@ -226,7 +224,7 @@ namespace Hertzole.Buffers
 		/// </summary>
 		public void Shuffle()
 		{
-			Shuffle(internalRandom);
+			Shuffle(ArrayPoolScopeGlobals.random);
 		}
 
 		/// <summary>
