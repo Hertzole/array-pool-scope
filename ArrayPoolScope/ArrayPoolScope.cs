@@ -162,6 +162,15 @@ namespace Hertzole.Buffers
 			return GetEnumerator();
 		}
 
+		/// <summary>
+		///     Copies the elements of the array to a new array.
+		/// </summary>
+		/// <param name="targetArray">The array to copy the elements to.</param>
+		public void CopyTo(Array targetArray)
+		{
+			Array.Copy(array, 0, targetArray, 0, Count);
+		}
+
 		/// <inheritdoc cref="System.Array.CopyTo(Array, int)" />
 		public void CopyTo(Array targetArray, int index)
 		{

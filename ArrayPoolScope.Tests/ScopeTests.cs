@@ -291,6 +291,25 @@ namespace ArrayPoolScope.Tests
 		}
 
 		[Test]
+		public void CopyTo_Array_ReturnsCorrectValues([Values(1, 5, 16, 30, 100)] int length)
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(length);
+			for (int i = 0; i < length; i++)
+			{
+				scope[i] = i;
+			}
+
+			int[] array = new int[length];
+
+			// Act
+			scope.CopyTo(array);
+
+			// Assert
+			Assert.That(array, Is.EquivalentTo(scope));
+		}
+
+		[Test]
 		public void CopyTo_Array_Int_ReturnsCorrectValues([Values(1, 5, 16, 30, 100)] int length)
 		{
 			// Arrange
