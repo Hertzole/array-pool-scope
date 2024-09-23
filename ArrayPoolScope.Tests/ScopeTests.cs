@@ -576,6 +576,26 @@ namespace ArrayPoolScope.Tests
 		}
 
 		[Test]
+		public void Sort_WithComparison_ReturnsSortedArray()
+		{
+			// Arrange
+			using ArrayPoolScope<string> scope = new ArrayPoolScope<string>(100);
+			for (int i = 0; i < 100; i++)
+			{
+				scope[i] = Guid.NewGuid().ToString();
+			}
+
+			// Act
+			scope.Sort((x, y) => string.Compare(x, y, StringComparison.Ordinal));
+
+			// Assert
+			for (int i = 1; i < 100; i++)
+			{
+				Assert.That(string.Compare(scope[i - 1], scope[i], StringComparison.Ordinal), Is.LessThanOrEqualTo(0));
+			}
+		}
+
+		[Test]
 		public void Shuffle_ReturnsShuffledArray()
 		{
 			// Arrange

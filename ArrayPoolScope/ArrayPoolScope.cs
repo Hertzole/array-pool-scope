@@ -220,6 +220,15 @@ namespace Hertzole.Buffers
 		}
 
 		/// <summary>
+		///     Sorts the elements in the array. The sort compares the elements to each other using the specified comparison.
+		/// </summary>
+		/// <param name="comparison">The comparison to use when comparing elements.</param>
+		public void Sort(Comparison<T> comparison)
+		{
+			Array.Sort(array, comparison);
+		}
+
+		/// <summary>
 		///     Randomly shuffles the elements in the array.
 		/// </summary>
 		public void Shuffle()
