@@ -12,7 +12,7 @@ namespace ArrayPoolScope.Tests
 		private static readonly Random random = new Random();
 
 		[Test]
-		public void CreateLength_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values(true, false)] bool clearArray)
+		public void CreateLength_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
 		{
 			// Arrange
 			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(length, null, clearArray);
@@ -20,24 +20,24 @@ namespace ArrayPoolScope.Tests
 			// Assert
 			Assert.That(scope, Has.Count.EqualTo(length));
 			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
-			Assert.That(scope.clearArray, Is.EqualTo(clearArray));
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 		}
 
 		[Test]
-		public void CreateLength_WithPool_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values(true, false)] bool clearArray)
+		public void CreateLength_WithPool_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
 		{
 			// Arrange
 			ArrayPool<int> pool = ArrayPool<int>.Create();
-			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(length, pool);
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(length, pool, clearArray);
 
 			// Assert
 			Assert.That(scope, Has.Count.EqualTo(length));
 			Assert.That(scope.pool, Is.SameAs(pool));
-			Assert.That(scope.clearArray, Is.False);
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 		}
 
 		[Test]
-		public void CreateFromArray_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values(true, false)] bool clearArray)
+		public void CreateFromArray_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
 		{
 			// Arrange
 			int[] array = new int[length];
@@ -52,11 +52,11 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope, Has.Count.EqualTo(length));
 			Assert.That(scope, Is.EquivalentTo(array));
 			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
-			Assert.That(scope.clearArray, Is.EqualTo(clearArray));
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 		}
 
 		[Test]
-		public void CreateFromArray_WithPool_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values(true, false)] bool clearArray)
+		public void CreateFromArray_WithPool_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
 		{
 			// Arrange
 			int[] array = new int[length];
@@ -66,17 +66,17 @@ namespace ArrayPoolScope.Tests
 			}
 
 			ArrayPool<int> pool = ArrayPool<int>.Create();
-			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(array, pool);
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(array, pool, clearArray);
 
 			// Assert
 			Assert.That(scope, Has.Count.EqualTo(length));
 			Assert.That(scope, Is.EquivalentTo(array));
 			Assert.That(scope.pool, Is.SameAs(pool));
-			Assert.That(scope.clearArray, Is.False);
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 		}
 
 		[Test]
-		public void CreateFromList_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values(true, false)] bool clearArray)
+		public void CreateFromList_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
 		{
 			// Arrange
 			List<int> list = new List<int>(length);
@@ -85,17 +85,17 @@ namespace ArrayPoolScope.Tests
 				list.Add(random.Next(int.MinValue, int.MaxValue));
 			}
 
-			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(list);
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(list, clearMode: clearArray);
 
 			// Assert
 			Assert.That(scope, Has.Count.EqualTo(length));
 			Assert.That(scope, Is.EquivalentTo(list));
 			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
-			Assert.That(scope.clearArray, Is.False);
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 		}
 
 		[Test]
-		public void CreateFromList_WithPool_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values(true, false)] bool clearArray)
+		public void CreateFromList_WithPool_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
 		{
 			// Arrange
 			List<int> list = new List<int>(length);
@@ -105,13 +105,13 @@ namespace ArrayPoolScope.Tests
 			}
 
 			ArrayPool<int> pool = ArrayPool<int>.Create();
-			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(list, pool);
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(list, pool, clearArray);
 
 			// Assert
 			Assert.That(scope, Has.Count.EqualTo(length));
 			Assert.That(scope, Is.EquivalentTo(list));
 			Assert.That(scope.pool, Is.SameAs(pool));
-			Assert.That(scope.clearArray, Is.False);
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 		}
 
 		[Test]
@@ -574,7 +574,7 @@ namespace ArrayPoolScope.Tests
 				Assert.That(scope.array[i], Is.EqualTo(originalLeftOver[i - 100]));
 			}
 		}
-		
+
 		[Test]
 		public void Shuffle_ReturnsShuffledArray()
 		{
@@ -601,7 +601,7 @@ namespace ArrayPoolScope.Tests
 
 			Assert.That(isShuffled, Is.True);
 		}
-		
+
 		[Test]
 		public void TrueForAll_ReturnsTrue()
 		{
@@ -618,7 +618,7 @@ namespace ArrayPoolScope.Tests
 			// Assert
 			Assert.That(all, Is.True);
 		}
-		
+
 		[Test]
 		public void TrueForAll_ReturnsFalse()
 		{
@@ -635,7 +635,7 @@ namespace ArrayPoolScope.Tests
 			// Assert
 			Assert.That(all, Is.False);
 		}
-		
+
 		[Test]
 		public void TrueForAll_ThrowsArgumentNullException()
 		{

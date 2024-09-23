@@ -7,7 +7,7 @@ namespace ArrayPoolScope.Tests
 	public class ArrayPoolExtensionsTests
 	{
 		[Test]
-		public void RentScopeFromPool_ReturnsCorrectLengthAndPool([Values(true, false)] bool clearArray, [Values(1, 10, 100)] int length)
+		public void RentScopeFromPool_ReturnsCorrectLengthAndPool([Values] ArrayClearMode clearArray, [Values(1, 10, 100)] int length)
 		{
 			// Arrange
 			ArrayPool<int> pool = ArrayPool<int>.Shared;
@@ -18,7 +18,7 @@ namespace ArrayPoolScope.Tests
 			// Assert
 			Assert.That(scope, Has.Count.EqualTo(length));
 			Assert.That(scope.pool, Is.SameAs(pool));
-			Assert.That(scope.clearArray, Is.EqualTo(clearArray));
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 		}
 	}
 }

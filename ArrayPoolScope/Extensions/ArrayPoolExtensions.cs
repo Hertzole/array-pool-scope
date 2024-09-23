@@ -12,12 +12,12 @@ namespace Hertzole.Buffers
 		/// </summary>
 		/// <param name="pool">The pool to rent from.</param>
 		/// <param name="length">The length of the array.</param>
-		/// <param name="clearArray">Indicates whether the contents of the buffer should be cleared when disposed.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
 		/// <typeparam name="T">The type of the objects that are in the resource pool.</typeparam>
 		/// <returns>An ArrayPoolScope of type T[].</returns>
-		public static ArrayPoolScope<T> RentScope<T>(this ArrayPool<T> pool, int length, bool clearArray = false)
+		public static ArrayPoolScope<T> RentScope<T>(this ArrayPool<T> pool, int length, ArrayClearMode clearMode = ArrayClearMode.Auto)
 		{
-			return new ArrayPoolScope<T>(length, pool, clearArray);
+			return new ArrayPoolScope<T>(length, pool, clearMode);
 		}
 	}
 }
