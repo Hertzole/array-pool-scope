@@ -201,6 +201,8 @@ namespace Hertzole.Buffers
 		/// <returns><c>true</c> if <c>item</c> is found in the array; otherwise, <c>false</c>.</returns>
 		public bool Contains(T item, IEqualityComparer<T> comparer)
 		{
+			ThrowHelper.ThrowIfNull(comparer, nameof(comparer));
+
 			for (int i = 0; i < Count; i++)
 			{
 				if (comparer.Equals(array[i], item))
@@ -230,6 +232,8 @@ namespace Hertzole.Buffers
 		/// <returns>The zero-based index of the first occurrence of <c>item</c> within the entire array, if found; otherwise, -1.</returns>
 		public int IndexOf(T item, IEqualityComparer<T> comparer)
 		{
+			ThrowHelper.ThrowIfNull(comparer, nameof(comparer));
+
 			for (int i = 0; i < Count; i++)
 			{
 				if (comparer.Equals(array[i], item))
@@ -289,6 +293,8 @@ namespace Hertzole.Buffers
 		/// <param name="random">The random generator.</param>
 		public void Shuffle(Random random)
 		{
+			ThrowHelper.ThrowIfNull(random, nameof(random));
+
 			for (int i = Count - 1; i > 0; i--)
 			{
 				int j = random.Next(i + 1);
@@ -309,14 +315,7 @@ namespace Hertzole.Buffers
 		/// <exception cref="ArgumentNullException">match is null.</exception>
 		public bool TrueForAll(Predicate<T> match)
 		{
-#if NET6_0_OR_GREATER
-			ArgumentNullException.ThrowIfNull(match, nameof(match));
-#else
-			if (match == null)
-			{
-				throw new ArgumentNullException(nameof(match));
-			}
-#endif
+			ThrowHelper.ThrowIfNull(match, nameof(match));
 
 			for (int i = 0; i < Count; i++)
 			{

@@ -457,6 +457,16 @@ namespace ArrayPoolScope.Tests
 		}
 
 		[Test]
+		public void Contains_NullComparer_ThrowsException()
+		{
+			// Arrange
+			using ArrayPoolScope<string> scope = new ArrayPoolScope<string>(100);
+
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => scope.Contains(Guid.NewGuid().ToString(), null!));
+		}
+
+		[Test]
 		public void IndexOf_ReturnsCorrectIndex()
 		{
 			// Arrange
@@ -526,6 +536,16 @@ namespace ArrayPoolScope.Tests
 
 			// Assert
 			Assert.That(index, Is.EqualTo(-1));
+		}
+		
+		[Test]
+		public void IndexOf_NullComparer_ThrowsException()
+		{
+			// Arrange
+			using ArrayPoolScope<string> scope = new ArrayPoolScope<string>(100);
+
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => scope.IndexOf(Guid.NewGuid().ToString(), null!));
 		}
 
 		[Test]
@@ -720,6 +740,16 @@ namespace ArrayPoolScope.Tests
 		}
 
 		[Test]
+		public void Shuffle_NullRandom_ThrowsException()
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(100);
+
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => scope.Shuffle(null!));
+		}
+
+		[Test]
 		public void TrueForAll_ReturnsTrue()
 		{
 			// Arrange
@@ -754,7 +784,7 @@ namespace ArrayPoolScope.Tests
 		}
 
 		[Test]
-		public void TrueForAll_ThrowsArgumentNullException()
+		public void TrueForAll_NullPredicate_ThrowsException()
 		{
 			// Arrange
 			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(100);
