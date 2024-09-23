@@ -7,7 +7,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # This workflow requires windows because we want to test .NET Framework 4.8 as well as .NET Core 3.1 and .NET 5.0+
+    runs-on: windows-latest
     outputs:
       test_results: net-test-results
     steps:
