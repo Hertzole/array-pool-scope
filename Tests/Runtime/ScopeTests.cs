@@ -15,7 +15,7 @@ namespace ArrayPoolScope.Tests
 		public void CreateLength_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
 		{
 			// Arrange
-			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(length, null, clearArray);
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(length, clearArray);
 
 			// Assert
 			Assert.That(scope, Has.Length.EqualTo(length));
@@ -39,6 +39,13 @@ namespace ArrayPoolScope.Tests
 		}
 
 		[Test]
+		public void CreateLength_NullPool_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>(1, null!));
+		}
+
+		[Test]
 		public void CreateFromArray_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
 		{
 			// Arrange
@@ -48,7 +55,7 @@ namespace ArrayPoolScope.Tests
 				array[i] = random.Next(int.MinValue, int.MaxValue);
 			}
 
-			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(array, null, clearArray);
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(array, clearArray);
 
 			// Assert
 			Assert.That(scope, Has.Length.EqualTo(length));
@@ -80,6 +87,27 @@ namespace ArrayPoolScope.Tests
 		}
 
 		[Test]
+		public void CreateFromArray_NullArray_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>(null!));
+		}
+
+		[Test]
+		public void CreateFromArray_NullArrayWithPool_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>(null!, ArrayPool<int>.Create()));
+		}
+
+		[Test]
+		public void CreateFromArray_NullPool_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>(new int[1], null!));
+		}
+
+		[Test]
 		public void CreateFromList_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
 		{
 			// Arrange
@@ -89,7 +117,7 @@ namespace ArrayPoolScope.Tests
 				list.Add(random.Next(int.MinValue, int.MaxValue));
 			}
 
-			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(list, clearMode: clearArray);
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(list, clearArray);
 
 			// Assert
 			Assert.That(scope, Has.Length.EqualTo(length));
@@ -121,6 +149,27 @@ namespace ArrayPoolScope.Tests
 		}
 
 		[Test]
+		public void CreateFromList_NullList_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>((List<int>) null!));
+		}
+
+		[Test]
+		public void CreateFromList_NullListWithPool_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>((List<int>) null!, ArrayPool<int>.Create()));
+		}
+
+		[Test]
+		public void CreateFromList_NullPool_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>(new List<int>(), null!));
+		}
+
+		[Test]
 		public void CreateFromSpan_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
 		{
 			// Arrange
@@ -130,7 +179,7 @@ namespace ArrayPoolScope.Tests
 				span[i] = random.Next(int.MinValue, int.MaxValue);
 			}
 
-			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(span, clearMode: clearArray);
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(span, clearArray);
 
 			// Assert
 			Assert.That(scope, Has.Length.EqualTo(length));
@@ -162,6 +211,13 @@ namespace ArrayPoolScope.Tests
 		}
 
 		[Test]
+		public void CreateFromSpan_NullPool_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>(new int[1].AsSpan(), null!));
+		}
+
+		[Test]
 		public void CreateFromMemory_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
 		{
 			// Arrange
@@ -171,7 +227,7 @@ namespace ArrayPoolScope.Tests
 				memory.Span[i] = random.Next(int.MinValue, int.MaxValue);
 			}
 
-			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(memory, clearMode: clearArray);
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(memory, clearArray);
 
 			// Assert
 			Assert.That(scope, Has.Length.EqualTo(length));
@@ -200,6 +256,13 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
+		}
+
+		[Test]
+		public void CreateFromMemory_NullPool_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>(new int[1].AsMemory(), null!));
 		}
 
 		[Test]
@@ -846,6 +909,269 @@ namespace ArrayPoolScope.Tests
 
 			// Assert
 			Assert.Throws<ArgumentNullException>(() => scope.TrueForAll(null!));
+		}
+
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
+		[Test]
+		public void Dispose_ClearModeAuto_SimpleStruct_DoesNotClear()
+		{
+			// Arrange
+			ArrayPoolScope<TestStruct> scope = new ArrayPoolScope<TestStruct>(100, ArrayClearMode.Auto);
+			for (int i = 0; i < scope.Length; i++)
+			{
+				scope[i] = new TestStruct { value = i };
+			}
+			TestStruct[] array = scope.array;
+			
+			// Act
+			scope.Dispose();
+			
+			// Assert
+			for (int i = 0; i < 100; i++)
+			{
+				Assert.That(array[i].value, Is.EqualTo(i));
+			}
+		}
+		
+		[Test]
+		public void Dispose_ClearModeAuto_StructWithReference_Clears()
+		{
+			// Arrange
+			ArrayPoolScope<TestStructWithReference> scope = new ArrayPoolScope<TestStructWithReference>(100, ArrayClearMode.Auto);
+			for (int i = 0; i < scope.Length; i++)
+			{
+				scope[i] = new TestStructWithReference { value = i };
+			}
+			TestStructWithReference[] array = scope.array;
+			
+			// Act
+			scope.Dispose();
+			
+			// Assert
+			for (int i = 0; i < 100; i++)
+			{
+				Assert.That(array[i], Is.EqualTo(default(TestStructWithReference)));
+			}
+		}
+		
+		[Test]
+		public void Dispose_ClearModeAuto_Class_Clears()
+		{
+			// Arrange
+			ArrayPoolScope<TestClass> scope = new ArrayPoolScope<TestClass>(100, ArrayClearMode.Auto);
+			for (int i = 0; i < scope.Length; i++)
+			{
+				scope[i] = new TestClass { value = i };
+			}
+			TestClass[] array = scope.array;
+			
+			// Act
+			scope.Dispose();
+			
+			// Assert
+			for (int i = 0; i < 100; i++)
+			{
+				Assert.That(array[i], Is.EqualTo(default(TestClass)));
+			}
+		}
+#else
+		[Test]
+		public void Dispose_ClearModeAutoAlways_SimpleStruct_Clears([Values(ArrayClearMode.Auto, ArrayClearMode.Always)] ArrayClearMode clearMode)
+		{
+			// Arrange
+			ArrayPoolScope<TestStruct> scope = new ArrayPoolScope<TestStruct>(100, clearMode);
+			for (int i = 0; i < scope.Length; i++)
+			{
+				scope[i] = new TestStruct { value = i };
+			}
+
+			TestStruct[] array = scope.array;
+
+			// Act
+			scope.Dispose();
+
+			// Assert
+			for (int i = 0; i < 100; i++)
+			{
+				Assert.That(array[i], Is.EqualTo(default(TestStruct)));
+			}
+		}
+
+		[Test]
+		public void Dispose_ClearModeAutoAlways_StructWithReference_Clears([Values(ArrayClearMode.Auto, ArrayClearMode.Always)] ArrayClearMode clearMode)
+		{
+			// Arrange
+			ArrayPoolScope<TestStructWithReference> scope = new ArrayPoolScope<TestStructWithReference>(100, clearMode);
+			for (int i = 0; i < scope.Length; i++)
+			{
+				scope[i] = new TestStructWithReference { value = i };
+			}
+
+			TestStructWithReference[] array = scope.array;
+
+			// Act
+			scope.Dispose();
+
+			// Assert
+			for (int i = 0; i < 100; i++)
+			{
+				Assert.That(array[i], Is.EqualTo(default(TestStructWithReference)));
+			}
+		}
+
+		[Test]
+		public void Dispose_ClearModeAutoAlways_Class_Clears([Values(ArrayClearMode.Auto, ArrayClearMode.Always)] ArrayClearMode clearMode)
+		{
+			// Arrange
+			ArrayPoolScope<TestClass> scope = new ArrayPoolScope<TestClass>(100, clearMode);
+			for (int i = 0; i < scope.Length; i++)
+			{
+				scope[i] = new TestClass { value = i };
+			}
+
+			TestClass[] array = scope.array;
+
+			// Act
+			scope.Dispose();
+
+			// Assert
+			for (int i = 0; i < 100; i++)
+			{
+				Assert.That(array[i], Is.EqualTo(default(TestClass)));
+			}
+		}
+#endif
+
+		[Test]
+		public void Dispose_ClearModeAlways_SimpleStruct_Clears()
+		{
+			// Arrange
+			ArrayPoolScope<TestStruct> scope = new ArrayPoolScope<TestStruct>(100, ArrayClearMode.Always);
+			for (int i = 0; i < scope.Length; i++)
+			{
+				scope[i] = new TestStruct { value = i };
+			}
+
+			TestStruct[] array = scope.array;
+
+			// Act
+			scope.Dispose();
+
+			// Assert
+			for (int i = 0; i < 100; i++)
+			{
+				Assert.That(array[i], Is.EqualTo(default(TestStruct)));
+			}
+		}
+
+		[Test]
+		public void Dispose_ClearModeAlways_StructWithReference_Clears()
+		{
+			// Arrange
+			ArrayPoolScope<TestStructWithReference> scope = new ArrayPoolScope<TestStructWithReference>(100, ArrayClearMode.Always);
+			for (int i = 0; i < scope.Length; i++)
+			{
+				scope[i] = new TestStructWithReference { value = i };
+			}
+
+			TestStructWithReference[] array = scope.array;
+
+			// Act
+			scope.Dispose();
+
+			// Assert
+			for (int i = 0; i < 100; i++)
+			{
+				Assert.That(array[i], Is.EqualTo(default(TestStructWithReference)));
+			}
+		}
+
+		[Test]
+		public void Dispose_ClearModeAlways_Class_Clears()
+		{
+			// Arrange
+			ArrayPoolScope<TestClass> scope = new ArrayPoolScope<TestClass>(100, ArrayClearMode.Always);
+			for (int i = 0; i < scope.Length; i++)
+			{
+				scope[i] = new TestClass { value = i };
+			}
+
+			TestClass[] array = scope.array;
+
+			// Act
+			scope.Dispose();
+
+			// Assert
+			for (int i = 0; i < 100; i++)
+			{
+				Assert.That(array[i], Is.EqualTo(default(TestClass)));
+			}
+		}
+
+		[Test]
+		public void Dispose_ClearModeNever_SimpleStruct_DoesNotClear()
+		{
+			// Arrange
+			ArrayPoolScope<TestStruct> scope = new ArrayPoolScope<TestStruct>(100, ArrayClearMode.Never);
+			for (int i = 0; i < scope.Length; i++)
+			{
+				scope[i] = new TestStruct { value = i };
+			}
+
+			TestStruct[] array = scope.array;
+
+			// Act
+			scope.Dispose();
+
+			// Assert
+			for (int i = 0; i < 100; i++)
+			{
+				Assert.That(array[i].value, Is.EqualTo(i));
+			}
+		}
+
+		[Test]
+		public void Dispose_ClearModeNever_StructWithReference_DoesNotClear()
+		{
+			// Arrange
+			ArrayPoolScope<TestStructWithReference> scope = new ArrayPoolScope<TestStructWithReference>(100, ArrayClearMode.Never);
+			for (int i = 0; i < scope.Length; i++)
+			{
+				scope[i] = new TestStructWithReference { value = i };
+			}
+
+			TestStructWithReference[] array = scope.array;
+
+			// Act
+			scope.Dispose();
+
+			// Assert
+			for (int i = 0; i < 100; i++)
+			{
+				Assert.That(array[i].value, Is.EqualTo(i));
+			}
+		}
+
+		[Test]
+		public void Dispose_ClearModeNever_Class_DoesNotClear()
+		{
+			// Arrange
+			ArrayPoolScope<TestClass> scope = new ArrayPoolScope<TestClass>(100, ArrayClearMode.Never);
+			for (int i = 0; i < scope.Length; i++)
+			{
+				scope[i] = new TestClass { value = i };
+			}
+
+			TestClass[] array = scope.array;
+
+			// Act
+			scope.Dispose();
+
+			// Assert
+			for (int i = 0; i < 100; i++)
+			{
+				Assert.That(array[i].value, Is.EqualTo(i));
+			}
 		}
 	}
 }
