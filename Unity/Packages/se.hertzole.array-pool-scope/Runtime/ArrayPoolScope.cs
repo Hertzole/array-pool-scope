@@ -28,57 +28,84 @@ namespace Hertzole.Buffers
 		}
 
 		/// <summary>
-		///     Creates a new <c>ArrayPoolScope</c> with the given length from a pool.
+		///     Creates a new <c>ArrayPoolScope</c> with the given length from a pool. It will use the
+		///     <see cref="ArrayPool{T}.Shared" /> pool.
 		/// </summary>
 		/// <param name="length">The length of the array.</param>
-		/// <param name="pool">If provided, it will get an array from that pool. Otherwise, it will use the <c>Shared</c> pool.</param>
 		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
-		public ArrayPoolScope(int length,
-#if NULLABLES
-			ArrayPool<T>? pool = null,
-#else
-			ArrayPool<T> pool = null,
-#endif
-			ArrayClearMode clearMode = ArrayClearMode.Auto)
+		public ArrayPoolScope(int length, ArrayClearMode clearMode = ArrayClearMode.Auto) : this(length, ArrayPool<T>.Shared, clearMode) { }
+
+		/// <summary>
+		///     Creates a new <c>ArrayPoolScope</c> with the given length from the provided pool.
+		/// </summary>
+		/// <param name="length">The length of the array.</param>
+		/// <param name="pool">The pool to get the array from.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
+		/// <exception cref="ArgumentNullException">If the pool is null.</exception>
+		public ArrayPoolScope(int length, ArrayPool<T> pool, ArrayClearMode clearMode = ArrayClearMode.Auto)
 		{
+			ThrowHelper.ThrowIfNull(pool, nameof(pool));
+
 			Length = length;
-			this.pool = pool ?? ArrayPool<T>.Shared;
+			this.pool = pool;
 			array = this.pool.Rent(length);
 			this.clearMode = clearMode;
 		}
 
 		/// <summary>
 		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source array to
+		///     the new pooled array. It will use the <see cref="ArrayPool{T}.Shared" /> pool.
+		/// </summary>
+		/// <param name="array">The source array that will be copied from.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
+		public ArrayPoolScope(T[] array, ArrayClearMode clearMode = ArrayClearMode.Auto) : this(array, ArrayPool<T>.Shared, clearMode) { }
+
+		/// <summary>
+		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source array to
 		///     the new pooled array.
 		/// </summary>
 		/// <param name="array">The source array that will be copied from.</param>
-		/// <param name="pool">If provided, it will get an array from that pool. Otherwise, it will use the <c>Shared</c> pool.</param>
+		/// <param name="pool">The pool to get the array from.</param>
 		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
-		public ArrayPoolScope(T[] array,
-#if NULLABLES
-			ArrayPool<T>? pool = null,
-#else
-			ArrayPool<T> pool = null,
-#endif
-			ArrayClearMode clearMode = ArrayClearMode.Auto) : this(array.AsSpan(), pool, clearMode) { }
+		/// <exception cref="ArgumentNullException">If the array is null.</exception>
+		/// <exception cref="ArgumentNullException">If the pool is null.</exception>
+		public ArrayPoolScope(T[] array, ArrayPool<T> pool, ArrayClearMode clearMode = ArrayClearMode.Auto)
+		{
+			ThrowHelper.ThrowIfNull(array, nameof(array));
+			ThrowHelper.ThrowIfNull(pool, nameof(pool));
+
+			Length = array.Length;
+			this.pool = pool;
+			this.array = this.pool.Rent(Length);
+			this.clearMode = clearMode;
+
+			Array.Copy(array, this.array, Length);
+		}
+
+		/// <summary>
+		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source list to
+		///     the new pooled array. It will use the <see cref="ArrayPool{T}.Shared" /> pool.
+		/// </summary>
+		/// <param name="list">The source list that will be copied from.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
+		public ArrayPoolScope(ICollection<T> list, ArrayClearMode clearMode = ArrayClearMode.Auto) : this(list, ArrayPool<T>.Shared, clearMode) { }
 
 		/// <summary>
 		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source list to
 		///     the new pooled array.
 		/// </summary>
 		/// <param name="list">The source list that will be copied from.</param>
-		/// <param name="pool">If provided, it will get an array from that pool. Otherwise, it will use the <c>Shared</c> pool.</param>
+		/// <param name="pool">The pool to get the array from.</param>
 		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
-		public ArrayPoolScope(ICollection<T> list,
-#if NULLABLES
-			ArrayPool<T>? pool = null,
-#else
-			ArrayPool<T> pool = null,
-#endif
-			ArrayClearMode clearMode = ArrayClearMode.Auto)
+		/// <exception cref="ArgumentNullException">If the list is null.</exception>
+		/// <exception cref="ArgumentNullException">If the pool is null.</exception>
+		public ArrayPoolScope(ICollection<T> list, ArrayPool<T> pool, ArrayClearMode clearMode = ArrayClearMode.Auto)
 		{
+			ThrowHelper.ThrowIfNull(list, nameof(list));
+			ThrowHelper.ThrowIfNull(pool, nameof(pool));
+
 			Length = list.Count;
-			this.pool = pool ?? ArrayPool<T>.Shared;
+			this.pool = pool;
 			array = this.pool.Rent(Length);
 			this.clearMode = clearMode;
 
@@ -87,21 +114,26 @@ namespace Hertzole.Buffers
 
 		/// <summary>
 		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source span to
+		///     the new pooled array. It will use the <see cref="ArrayPool{T}.Shared" /> pool.
+		/// </summary>
+		/// <param name="span">The source span that will be copied from.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
+		public ArrayPoolScope(ReadOnlySpan<T> span, ArrayClearMode clearMode = ArrayClearMode.Auto) : this(span, ArrayPool<T>.Shared, clearMode) { }
+
+		/// <summary>
+		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source span to
 		///     the new pooled array.
 		/// </summary>
 		/// <param name="span">The source span that will be copied from.</param>
-		/// <param name="pool">If provided, it will get an array from that pool. Otherwise, it will use the <c>Shared</c> pool.</param>
+		/// <param name="pool">The pool to get the array from.</param>
 		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
-		public ArrayPoolScope(ReadOnlySpan<T> span,
-#if NULLABLES
-			ArrayPool<T>? pool = null,
-#else
-			ArrayPool<T> pool = null,
-#endif
-			ArrayClearMode clearMode = ArrayClearMode.Auto)
+		/// <exception cref="ArgumentNullException">If the pool is null.</exception>
+		public ArrayPoolScope(ReadOnlySpan<T> span, ArrayPool<T> pool, ArrayClearMode clearMode = ArrayClearMode.Auto)
 		{
+			ThrowHelper.ThrowIfNull(pool, nameof(pool));
+
 			Length = span.Length;
-			this.pool = pool ?? ArrayPool<T>.Shared;
+			this.pool = pool;
 			array = this.pool.Rent(Length);
 			this.clearMode = clearMode;
 
@@ -110,18 +142,22 @@ namespace Hertzole.Buffers
 
 		/// <summary>
 		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source memory to
+		///     the new pooled array. It will use the <see cref="ArrayPool{T}.Shared" /> pool.
+		/// </summary>
+		/// <param name="memory">The source memory that will be copied from.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
+		public ArrayPoolScope(ReadOnlyMemory<T> memory, ArrayClearMode clearMode = ArrayClearMode.Auto) : this(memory.Span, ArrayPool<T>.Shared, clearMode) { }
+
+		/// <summary>
+		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source memory to
 		///     the new pooled array.
 		/// </summary>
 		/// <param name="memory">The source memory that will be copied from.</param>
-		/// <param name="pool">If provided, it will get an array from that pool. Otherwise, it will use the <c>Shared</c> pool.</param>
+		/// <param name="pool">The pool to get the array from.</param>
 		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
-		public ArrayPoolScope(ReadOnlyMemory<T> memory,
-#if NULLABLES
-			ArrayPool<T>? pool = null,
-#else
-			ArrayPool<T> pool = null,
-#endif
-			ArrayClearMode clearMode = ArrayClearMode.Auto) : this(memory.Span, pool, clearMode) { }
+		/// <exception cref="ArgumentNullException">If the pool is null.</exception>
+		public ArrayPoolScope(ReadOnlyMemory<T> memory, ArrayPool<T> pool, ArrayClearMode clearMode = ArrayClearMode.Auto) :
+			this(memory.Span, pool, clearMode) { }
 
 		/// <inheritdoc cref="IReadOnlyList{T}.this" />
 		/// <exception cref="ArgumentOutOfRangeException">If the index is below <c>0</c> or outside the provided length.</exception>
@@ -206,6 +242,7 @@ namespace Hertzole.Buffers
 		/// <param name="item">The object to locate in the array.</param>
 		/// <param name="comparer">The comparer to use when comparing elements.</param>
 		/// <returns><c>true</c> if <c>item</c> is found in the array; otherwise, <c>false</c>.</returns>
+		/// <exception cref="ArgumentNullException">comparer is null.</exception>
 		public bool Contains(T item, IEqualityComparer<T> comparer)
 		{
 			ThrowHelper.ThrowIfNull(comparer, nameof(comparer));
@@ -237,6 +274,7 @@ namespace Hertzole.Buffers
 		/// <param name="item">The object to locate in the array.</param>
 		/// <param name="comparer">The comparer to use when comparing elements.</param>
 		/// <returns>The zero-based index of the first occurrence of <c>item</c> within the entire array, if found; otherwise, -1.</returns>
+		/// <exception cref="ArgumentNullException">comparer is null.</exception>
 		public int IndexOf(T item, IEqualityComparer<T> comparer)
 		{
 			ThrowHelper.ThrowIfNull(comparer, nameof(comparer));
@@ -281,6 +319,7 @@ namespace Hertzole.Buffers
 		///     Sorts the elements in the array. The sort compares the elements to each other using the specified comparison.
 		/// </summary>
 		/// <param name="comparison">The comparison to use when comparing elements.</param>
+		/// <exception cref="ArgumentNullException">comparison is null.</exception>
 		public void Sort(Comparison<T> comparison)
 		{
 #if NET5_0_OR_GREATER
@@ -311,6 +350,7 @@ namespace Hertzole.Buffers
 		///     Randomly shuffles the elements in the array using the provided random generator.
 		/// </summary>
 		/// <param name="random">The random generator.</param>
+		/// <exception cref="ArgumentNullException">random is null.</exception>
 		public void Shuffle(Random random)
 		{
 			ThrowHelper.ThrowIfNull(random, nameof(random));
