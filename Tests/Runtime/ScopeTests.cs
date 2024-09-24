@@ -18,9 +18,10 @@ namespace ArrayPoolScope.Tests
 			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(length, null, clearArray);
 
 			// Assert
-			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
 		}
 
 		[Test]
@@ -31,9 +32,10 @@ namespace ArrayPoolScope.Tests
 			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(length, pool, clearArray);
 
 			// Assert
-			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
 		}
 
 		[Test]
@@ -49,10 +51,11 @@ namespace ArrayPoolScope.Tests
 			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(array, null, clearArray);
 
 			// Assert
-			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope, Is.EquivalentTo(array));
 			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
 		}
 
 		[Test]
@@ -69,10 +72,11 @@ namespace ArrayPoolScope.Tests
 			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(array, pool, clearArray);
 
 			// Assert
-			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope, Is.EquivalentTo(array));
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
 		}
 
 		[Test]
@@ -88,10 +92,11 @@ namespace ArrayPoolScope.Tests
 			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(list, clearMode: clearArray);
 
 			// Assert
-			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope, Is.EquivalentTo(list));
 			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
 		}
 
 		[Test]
@@ -108,10 +113,11 @@ namespace ArrayPoolScope.Tests
 			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(list, pool, clearArray);
 
 			// Assert
-			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope, Is.EquivalentTo(list));
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
 		}
 
 		[Test]
@@ -127,10 +133,11 @@ namespace ArrayPoolScope.Tests
 			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(span, clearMode: clearArray);
 
 			// Assert
-			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope, Is.EquivalentTo(span.ToArray()));
 			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
 		}
 
 		[Test]
@@ -147,10 +154,11 @@ namespace ArrayPoolScope.Tests
 			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(span, pool, clearArray);
 
 			// Assert
-			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope, Is.EquivalentTo(span.ToArray()));
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
 		}
 
 		[Test]
@@ -166,10 +174,11 @@ namespace ArrayPoolScope.Tests
 			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(memory, clearMode: clearArray);
 
 			// Assert
-			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope, Is.EquivalentTo(memory.ToArray()));
 			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
 		}
 
 		[Test]
@@ -186,10 +195,11 @@ namespace ArrayPoolScope.Tests
 			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(memory, pool, clearArray);
 
 			// Assert
-			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope, Is.EquivalentTo(memory.ToArray()));
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
 		}
 
 		[Test]
@@ -328,6 +338,7 @@ namespace ArrayPoolScope.Tests
 			Assert.That(array, Is.EquivalentTo(scope));
 		}
 
+#if NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER
 		[Test]
 		public void CopyTo_Array_Long_ReturnsCorrectValues([Values(1, 5, 16, 30, 100)] int length)
 		{
@@ -346,6 +357,7 @@ namespace ArrayPoolScope.Tests
 			// Assert
 			Assert.That(array, Is.EquivalentTo(scope));
 		}
+#endif
 
 		[Test]
 		public void Dispose_ReturnsArrayToPool([Values(1, 5, 16, 30, 100)] int length)
@@ -537,7 +549,7 @@ namespace ArrayPoolScope.Tests
 			// Assert
 			Assert.That(index, Is.EqualTo(-1));
 		}
-		
+
 		[Test]
 		public void IndexOf_NullComparer_ThrowsException()
 		{
@@ -710,6 +722,49 @@ namespace ArrayPoolScope.Tests
 			{
 				Assert.That(string.Compare(scope[i - 1], scope[i], StringComparison.Ordinal), Is.LessThanOrEqualTo(0));
 			}
+		}
+
+		[Test]
+		public void Sort_WithComparison_DoesNotSortOutOfBounds()
+		{
+			// Arrange
+			using ArrayPoolScope<string> scope = new ArrayPoolScope<string>(100);
+			// The array should be 128 in size and therefor the last 28 elements should not be sorted.
+			for (int i = 0; i < scope.array.Length; i++)
+			{
+				scope.array[i] = Guid.NewGuid().ToString();
+			}
+
+			string[] originalLeftOver = new string[28];
+			Array.Copy(scope.array, 100, originalLeftOver, 0, 28);
+
+			// Act
+			scope.Sort((x, y) => string.Compare(x, y, StringComparison.Ordinal));
+
+			// Assert
+			for (int i = 1; i < 100; i++)
+			{
+				Assert.That(string.Compare(scope[i - 1], scope[i], StringComparison.Ordinal), Is.LessThanOrEqualTo(0));
+			}
+
+			for (int i = 100; i < 128; i++)
+			{
+				Assert.That(scope.array[i], Is.EqualTo(originalLeftOver[i - 100]));
+			}
+		}
+
+		[Test]
+		public void Sort_WithComparison_NotEnoughElements_DoesNothing()
+		{
+			// Arrange
+			using ArrayPoolScope<string> scope = new ArrayPoolScope<string>(1);
+			scope[0] = "a";
+
+			// Act
+			scope.Sort((x, y) => string.Compare(x, y, StringComparison.Ordinal));
+
+			// Assert
+			Assert.That(scope[0], Is.EqualTo("a"));
 		}
 
 		[Test]
