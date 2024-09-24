@@ -338,6 +338,7 @@ namespace ArrayPoolScope.Tests
 			Assert.That(array, Is.EquivalentTo(scope));
 		}
 
+#if NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER
 		[Test]
 		public void CopyTo_Array_Long_ReturnsCorrectValues([Values(1, 5, 16, 30, 100)] int length)
 		{
@@ -356,6 +357,7 @@ namespace ArrayPoolScope.Tests
 			// Assert
 			Assert.That(array, Is.EquivalentTo(scope));
 		}
+#endif
 
 		[Test]
 		public void Dispose_ReturnsArrayToPool([Values(1, 5, 16, 30, 100)] int length)
