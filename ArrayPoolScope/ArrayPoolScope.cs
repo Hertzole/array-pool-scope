@@ -177,11 +177,13 @@ namespace Hertzole.Buffers
 			Array.Copy(array, index, targetArray, 0, Count);
 		}
 
+#if NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER
 		/// <inheritdoc cref="System.Array.CopyTo(Array, long)" />
 		public void CopyTo(Array targetArray, long index)
 		{
 			Array.Copy(array, index, targetArray, 0, Count);
 		}
+#endif
 
 		/// <summary>
 		///     Determines whether an element is in the array.

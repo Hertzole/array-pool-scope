@@ -5,8 +5,8 @@
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
-        <LangVersion>8</LangVersion>
-        <TargetFrameworks>net5.0;net6.0;net7.0;net8.0;net471;net48</TargetFrameworks>
+        <LangVersion>default</LangVersion>
+        <TargetFrameworks>net461;net462;net47;net471;net472;net48;net481;net5.0;net6.0;net7.0;net8.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
