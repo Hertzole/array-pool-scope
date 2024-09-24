@@ -276,7 +276,20 @@ namespace Hertzole.Buffers
 		/// <param name="comparison">The comparison to use when comparing elements.</param>
 		public void Sort(Comparison<T> comparison)
 		{
-			Array.Sort(array, comparison);
+#if NET5_0_OR_GREATER
+			Span<T> span = array.AsSpan(0, Count);
+			span.Sort(comparison);
+			span.CopyTo(array);
+#else
+			// The reason there's no check in .NET 5+ is because the span.Sort method already does it.
+			// Here we do it to avoid creating a box for the comparison object if there's no need to sort.
+			if (Count <= 1)
+			{
+				return;
+			}
+
+			Array.Sort(array, 0, Count, new Comparer(comparison));
+#endif
 		}
 
 		/// <summary>
@@ -410,5 +423,22 @@ namespace Hertzole.Buffers
 			/// <remarks>This does nothing for this enumerator.</remarks>
 			public void Dispose() { }
 		}
+
+#if !NET5_0_OR_GREATER
+		private readonly struct Comparer : IComparer<T>
+		{
+			private readonly Comparison<T> comparison;
+
+			public Comparer(Comparison<T> comparison)
+			{
+				this.comparison = comparison;
+			}
+
+			public int Compare(T x, T y)
+			{
+				return comparison(x, y);
+			}
+		}
+#endif
 	}
 }

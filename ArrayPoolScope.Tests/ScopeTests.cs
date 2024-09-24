@@ -537,7 +537,7 @@ namespace ArrayPoolScope.Tests
 			// Assert
 			Assert.That(index, Is.EqualTo(-1));
 		}
-		
+
 		[Test]
 		public void IndexOf_NullComparer_ThrowsException()
 		{
@@ -710,6 +710,49 @@ namespace ArrayPoolScope.Tests
 			{
 				Assert.That(string.Compare(scope[i - 1], scope[i], StringComparison.Ordinal), Is.LessThanOrEqualTo(0));
 			}
+		}
+
+		[Test]
+		public void Sort_WithComparison_DoesNotSortOutOfBounds()
+		{
+			// Arrange
+			using ArrayPoolScope<string> scope = new ArrayPoolScope<string>(100);
+			// The array should be 128 in size and therefor the last 28 elements should not be sorted.
+			for (int i = 0; i < scope.array.Length; i++)
+			{
+				scope.array[i] = Guid.NewGuid().ToString();
+			}
+
+			string[] originalLeftOver = new string[28];
+			Array.Copy(scope.array, 100, originalLeftOver, 0, 28);
+
+			// Act
+			scope.Sort((x, y) => string.Compare(x, y, StringComparison.Ordinal));
+
+			// Assert
+			for (int i = 1; i < 100; i++)
+			{
+				Assert.That(string.Compare(scope[i - 1], scope[i], StringComparison.Ordinal), Is.LessThanOrEqualTo(0));
+			}
+
+			for (int i = 100; i < 128; i++)
+			{
+				Assert.That(scope.array[i], Is.EqualTo(originalLeftOver[i - 100]));
+			}
+		}
+
+		[Test]
+		public void Sort_WithComparison_NotEnoughElements_DoesNothing()
+		{
+			// Arrange
+			using ArrayPoolScope<string> scope = new ArrayPoolScope<string>(1);
+			scope[0] = "a";
+
+			// Act
+			scope.Sort((x, y) => string.Compare(x, y, StringComparison.Ordinal));
+
+			// Assert
+			Assert.That(scope[0], Is.EqualTo("a"));
 		}
 
 		[Test]
