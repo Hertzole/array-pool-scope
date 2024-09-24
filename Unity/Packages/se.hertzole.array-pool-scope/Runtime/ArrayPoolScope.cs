@@ -20,7 +20,12 @@ namespace Hertzole.Buffers
 		internal readonly ArrayClearMode clearMode;
 
 		/// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
-		public int Count { get; }
+		public int Length { get; }
+
+		int IReadOnlyCollection<T>.Count
+		{
+			get { return Length; }
+		}
 
 		/// <summary>
 		///     Creates a new <c>ArrayPoolScope</c> with the given length from a pool.
@@ -36,7 +41,7 @@ namespace Hertzole.Buffers
 #endif
 			ArrayClearMode clearMode = ArrayClearMode.Auto)
 		{
-			Count = length;
+			Length = length;
 			this.pool = pool ?? ArrayPool<T>.Shared;
 			array = this.pool.Rent(length);
 			this.clearMode = clearMode;
@@ -72,9 +77,9 @@ namespace Hertzole.Buffers
 #endif
 			ArrayClearMode clearMode = ArrayClearMode.Auto)
 		{
-			Count = list.Count;
+			Length = list.Count;
 			this.pool = pool ?? ArrayPool<T>.Shared;
-			array = this.pool.Rent(Count);
+			array = this.pool.Rent(Length);
 			this.clearMode = clearMode;
 
 			list.CopyTo(array, 0);
@@ -95,9 +100,9 @@ namespace Hertzole.Buffers
 #endif
 			ArrayClearMode clearMode = ArrayClearMode.Auto)
 		{
-			Count = span.Length;
+			Length = span.Length;
 			this.pool = pool ?? ArrayPool<T>.Shared;
-			array = this.pool.Rent(Count);
+			array = this.pool.Rent(Length);
 			this.clearMode = clearMode;
 
 			span.CopyTo(array);
@@ -125,7 +130,7 @@ namespace Hertzole.Buffers
 			get
 			{
 				// Casting to uint skips the bounds check.
-				if (index < 0 || (uint) index >= (uint) Count)
+				if (index < 0 || (uint) index >= (uint) Length)
 				{
 					throw new ArgumentOutOfRangeException(nameof(index), "Index out of range.");
 				}
@@ -135,7 +140,7 @@ namespace Hertzole.Buffers
 			set
 			{
 				// Casting to uint skips the bounds check.
-				if (index < 0 || (uint) index >= (uint) Count)
+				if (index < 0 || (uint) index >= (uint) Length)
 				{
 					throw new ArgumentOutOfRangeException(nameof(index), "Index out of range.");
 				}
@@ -147,7 +152,7 @@ namespace Hertzole.Buffers
 		/// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
 		public Enumerator GetEnumerator()
 		{
-			return new Enumerator(array, Count);
+			return new Enumerator(array, Length);
 		}
 
 		/// <inheritdoc />
@@ -168,20 +173,22 @@ namespace Hertzole.Buffers
 		/// <param name="targetArray">The array to copy the elements to.</param>
 		public void CopyTo(Array targetArray)
 		{
-			Array.Copy(array, 0, targetArray, 0, Count);
+			Array.Copy(array, 0, targetArray, 0, Length);
 		}
 
 		/// <inheritdoc cref="System.Array.CopyTo(Array, int)" />
 		public void CopyTo(Array targetArray, int index)
 		{
-			Array.Copy(array, index, targetArray, 0, Count);
+			Array.Copy(array, index, targetArray, 0, Length);
 		}
 
+#if NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER
 		/// <inheritdoc cref="System.Array.CopyTo(Array, long)" />
 		public void CopyTo(Array targetArray, long index)
 		{
-			Array.Copy(array, index, targetArray, 0, Count);
+			Array.Copy(array, index, targetArray, 0, Length);
 		}
+#endif
 
 		/// <summary>
 		///     Determines whether an element is in the array.
@@ -190,7 +197,7 @@ namespace Hertzole.Buffers
 		/// <returns><c>true</c> if <c>item</c> is found in the array; otherwise, <c>false</c>.</returns>
 		public bool Contains(T item)
 		{
-			return Array.IndexOf(array, item, 0, Count) >= 0;
+			return Array.IndexOf(array, item, 0, Length) >= 0;
 		}
 
 		/// <summary>
@@ -203,7 +210,7 @@ namespace Hertzole.Buffers
 		{
 			ThrowHelper.ThrowIfNull(comparer, nameof(comparer));
 
-			for (int i = 0; i < Count; i++)
+			for (int i = 0; i < Length; i++)
 			{
 				if (comparer.Equals(array[i], item))
 				{
@@ -221,7 +228,7 @@ namespace Hertzole.Buffers
 		/// <returns>The zero-based index of the first occurrence of <c>item</c> within the entire array, if found; otherwise, -1.</returns>
 		public int IndexOf(T item)
 		{
-			return Array.IndexOf(array, item, 0, Count);
+			return Array.IndexOf(array, item, 0, Length);
 		}
 
 		/// <summary>
@@ -234,7 +241,7 @@ namespace Hertzole.Buffers
 		{
 			ThrowHelper.ThrowIfNull(comparer, nameof(comparer));
 
-			for (int i = 0; i < Count; i++)
+			for (int i = 0; i < Length; i++)
 			{
 				if (comparer.Equals(array[i], item))
 				{
@@ -250,7 +257,7 @@ namespace Hertzole.Buffers
 		/// </summary>
 		public void Reverse()
 		{
-			Array.Reverse(array, 0, Count);
+			Array.Reverse(array, 0, Length);
 		}
 
 		/// <summary>
@@ -258,7 +265,7 @@ namespace Hertzole.Buffers
 		/// </summary>
 		public void Sort()
 		{
-			Array.Sort(array, 0, Count, Comparer<T>.Default);
+			Array.Sort(array, 0, Length, Comparer<T>.Default);
 		}
 
 		/// <summary>
@@ -267,7 +274,7 @@ namespace Hertzole.Buffers
 		/// <param name="comparer">The comparer to use when comparing elements.</param>
 		public void Sort(IComparer<T> comparer)
 		{
-			Array.Sort(array, 0, Count, comparer);
+			Array.Sort(array, 0, Length, comparer);
 		}
 
 		/// <summary>
@@ -276,7 +283,20 @@ namespace Hertzole.Buffers
 		/// <param name="comparison">The comparison to use when comparing elements.</param>
 		public void Sort(Comparison<T> comparison)
 		{
-			Array.Sort(array, comparison);
+#if NET5_0_OR_GREATER
+			Span<T> span = array.AsSpan(0, Length);
+			span.Sort(comparison);
+			span.CopyTo(array);
+#else
+			// The reason there's no check in .NET 5+ is because the span.Sort method already does it.
+			// Here we do it to avoid creating a box for the comparison object if there's no need to sort.
+			if (Length <= 1)
+			{
+				return;
+			}
+
+			Array.Sort(array, 0, Length, new Comparer(comparison));
+#endif
 		}
 
 		/// <summary>
@@ -295,7 +315,7 @@ namespace Hertzole.Buffers
 		{
 			ThrowHelper.ThrowIfNull(random, nameof(random));
 
-			for (int i = Count - 1; i > 0; i--)
+			for (int i = Length - 1; i > 0; i--)
 			{
 				int j = random.Next(i + 1);
 				T temp = array[i];
@@ -317,7 +337,7 @@ namespace Hertzole.Buffers
 		{
 			ThrowHelper.ThrowIfNull(match, nameof(match));
 
-			for (int i = 0; i < Count; i++)
+			for (int i = 0; i < Length; i++)
 			{
 				if (!match(array[i]))
 				{
@@ -410,5 +430,22 @@ namespace Hertzole.Buffers
 			/// <remarks>This does nothing for this enumerator.</remarks>
 			public void Dispose() { }
 		}
+
+#if !NET5_0_OR_GREATER
+		private readonly struct Comparer : IComparer<T>
+		{
+			private readonly Comparison<T> comparison;
+
+			public Comparer(Comparison<T> comparison)
+			{
+				this.comparison = comparison;
+			}
+
+			public int Compare(T x, T y)
+			{
+				return comparison(x, y);
+			}
+		}
+#endif
 	}
 }

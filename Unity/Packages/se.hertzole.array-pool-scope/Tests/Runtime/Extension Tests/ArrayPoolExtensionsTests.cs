@@ -20,7 +20,7 @@ namespace ArrayPoolScope.Tests
 			using ArrayPoolScope<int> scope = pool.RentScope(length, clearArray);
 
 			// Assert
-			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 		}
@@ -40,7 +40,7 @@ namespace ArrayPoolScope.Tests
 			using ArrayPoolScope<int> scope = pool.RentScope(array, clearArray);
 
 			// Assert
-			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 			Assert.That(scope, Is.EquivalentTo(array));
@@ -61,7 +61,7 @@ namespace ArrayPoolScope.Tests
 			using ArrayPoolScope<int> scope = pool.RentScope(list, clearArray);
 
 			// Assert
-			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 			Assert.That(scope, Is.EquivalentTo(list));
@@ -82,7 +82,7 @@ namespace ArrayPoolScope.Tests
 			using ArrayPoolScope<int> scope = pool.RentScope(array.AsSpan(), clearArray);
 
 			// Assert
-			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 			Assert.That(scope, Is.EquivalentTo(array));
@@ -103,7 +103,7 @@ namespace ArrayPoolScope.Tests
 			using ArrayPoolScope<int> scope = pool.RentScope(array.AsMemory(), clearArray);
 
 			// Assert
-			Assert.That(scope, Has.Count.EqualTo(length));
+			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 			Assert.That(scope, Is.EquivalentTo(array));
