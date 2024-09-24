@@ -21,7 +21,7 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
-			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
+			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
 
 		[Test]
@@ -35,7 +35,7 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope, Has.Length.EqualTo(length));
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
-			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
+			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
 
 		[Test]
@@ -55,7 +55,7 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope, Is.EquivalentTo(array));
 			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
-			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
+			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
 
 		[Test]
@@ -76,7 +76,7 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope, Is.EquivalentTo(array));
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
-			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
+			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
 
 		[Test]
@@ -96,7 +96,7 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope, Is.EquivalentTo(list));
 			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
-			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
+			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
 
 		[Test]
@@ -117,7 +117,7 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope, Is.EquivalentTo(list));
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
-			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
+			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
 
 		[Test]
@@ -137,7 +137,7 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope, Is.EquivalentTo(span.ToArray()));
 			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
-			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
+			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
 
 		[Test]
@@ -158,7 +158,7 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope, Is.EquivalentTo(span.ToArray()));
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
-			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
+			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
 
 		[Test]
@@ -178,7 +178,7 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope, Is.EquivalentTo(memory.ToArray()));
 			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
-			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
+			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
 
 		[Test]
@@ -199,7 +199,7 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope, Is.EquivalentTo(memory.ToArray()));
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
-			Assert.That((IReadOnlyCollection<int>) scope, Has.Count.EqualTo(length));
+			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
 
 		[Test]
