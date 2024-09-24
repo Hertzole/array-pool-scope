@@ -73,12 +73,12 @@ namespace Hertzole.Buffers
 		{
 			ThrowHelper.ThrowIfNull(array, nameof(array));
 			ThrowHelper.ThrowIfNull(pool, nameof(pool));
-			
+
 			Length = array.Length;
 			this.pool = pool;
 			this.array = this.pool.Rent(Length);
 			this.clearMode = clearMode;
-			 
+
 			Array.Copy(array, this.array, Length);
 		}
 
@@ -242,6 +242,7 @@ namespace Hertzole.Buffers
 		/// <param name="item">The object to locate in the array.</param>
 		/// <param name="comparer">The comparer to use when comparing elements.</param>
 		/// <returns><c>true</c> if <c>item</c> is found in the array; otherwise, <c>false</c>.</returns>
+		/// <exception cref="ArgumentNullException">comparer is null.</exception>
 		public bool Contains(T item, IEqualityComparer<T> comparer)
 		{
 			ThrowHelper.ThrowIfNull(comparer, nameof(comparer));
@@ -273,6 +274,7 @@ namespace Hertzole.Buffers
 		/// <param name="item">The object to locate in the array.</param>
 		/// <param name="comparer">The comparer to use when comparing elements.</param>
 		/// <returns>The zero-based index of the first occurrence of <c>item</c> within the entire array, if found; otherwise, -1.</returns>
+		/// <exception cref="ArgumentNullException">comparer is null.</exception>
 		public int IndexOf(T item, IEqualityComparer<T> comparer)
 		{
 			ThrowHelper.ThrowIfNull(comparer, nameof(comparer));
@@ -317,6 +319,7 @@ namespace Hertzole.Buffers
 		///     Sorts the elements in the array. The sort compares the elements to each other using the specified comparison.
 		/// </summary>
 		/// <param name="comparison">The comparison to use when comparing elements.</param>
+		/// <exception cref="ArgumentNullException">comparison is null.</exception>
 		public void Sort(Comparison<T> comparison)
 		{
 #if NET5_0_OR_GREATER
@@ -347,6 +350,7 @@ namespace Hertzole.Buffers
 		///     Randomly shuffles the elements in the array using the provided random generator.
 		/// </summary>
 		/// <param name="random">The random generator.</param>
+		/// <exception cref="ArgumentNullException">random is null.</exception>
 		public void Shuffle(Random random)
 		{
 			ThrowHelper.ThrowIfNull(random, nameof(random));
