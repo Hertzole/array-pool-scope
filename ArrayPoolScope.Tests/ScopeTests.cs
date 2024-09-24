@@ -15,7 +15,7 @@ namespace ArrayPoolScope.Tests
 		public void CreateLength_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
 		{
 			// Arrange
-			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(length, null, clearArray);
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(length, clearArray);
 
 			// Assert
 			Assert.That(scope, Has.Length.EqualTo(length));
@@ -39,6 +39,13 @@ namespace ArrayPoolScope.Tests
 		}
 
 		[Test]
+		public void CreateLength_NullPool_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>(1, null!));
+		}
+
+		[Test]
 		public void CreateFromArray_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
 		{
 			// Arrange
@@ -48,7 +55,7 @@ namespace ArrayPoolScope.Tests
 				array[i] = random.Next(int.MinValue, int.MaxValue);
 			}
 
-			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(array, null, clearArray);
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(array, clearArray);
 
 			// Assert
 			Assert.That(scope, Has.Length.EqualTo(length));
@@ -78,6 +85,27 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
+		
+		[Test]
+		public void CreateFromArray_NullArray_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>(null!));
+		}
+		
+		[Test]
+		public void CreateFromArray_NullArrayWithPool_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>(null!, ArrayPool<int>.Create()));
+		}
+		
+		[Test]
+		public void CreateFromArray_NullPool_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>(new int[1], null!));
+		}
 
 		[Test]
 		public void CreateFromList_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
@@ -89,7 +117,7 @@ namespace ArrayPoolScope.Tests
 				list.Add(random.Next(int.MinValue, int.MaxValue));
 			}
 
-			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(list, clearMode: clearArray);
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(list, clearArray);
 
 			// Assert
 			Assert.That(scope, Has.Length.EqualTo(length));
@@ -119,6 +147,27 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
+		
+		[Test]
+		public void CreateFromList_NullList_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>((List<int>) null!));
+		}
+
+		[Test]
+		public void CreateFromList_NullListWithPool_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>((List<int>) null!, ArrayPool<int>.Create()));
+		}
+		
+		[Test]
+		public void CreateFromList_NullPool_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>(new List<int>(), null!));
+		}
 
 		[Test]
 		public void CreateFromSpan_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
@@ -130,7 +179,7 @@ namespace ArrayPoolScope.Tests
 				span[i] = random.Next(int.MinValue, int.MaxValue);
 			}
 
-			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(span, clearMode: clearArray);
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(span, clearArray);
 
 			// Assert
 			Assert.That(scope, Has.Length.EqualTo(length));
@@ -160,6 +209,13 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
+		
+		[Test]
+		public void CreateFromSpan_NullPool_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>(new int[1].AsSpan(), null!));
+		}
 
 		[Test]
 		public void CreateFromMemory_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
@@ -171,7 +227,7 @@ namespace ArrayPoolScope.Tests
 				memory.Span[i] = random.Next(int.MinValue, int.MaxValue);
 			}
 
-			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(memory, clearMode: clearArray);
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(memory, clearArray);
 
 			// Assert
 			Assert.That(scope, Has.Length.EqualTo(length));
@@ -200,6 +256,13 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope.pool, Is.SameAs(pool));
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
+		}
+		
+		[Test]
+		public void CreateFromMemory_NullPool_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>(new int[1].AsMemory(), null!));
 		}
 
 		[Test]

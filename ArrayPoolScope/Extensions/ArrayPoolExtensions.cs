@@ -30,6 +30,7 @@ namespace Hertzole.Buffers
 		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
 		/// <typeparam name="T">The type of the objects that are in the resource pool.</typeparam>
 		/// <returns>An ArrayPoolScope of type T[].</returns>
+		/// <exception cref="ArgumentNullException">If the array is null.</exception>
 		public static ArrayPoolScope<T> RentScope<T>(this ArrayPool<T> pool, T[] array, ArrayClearMode clearMode = ArrayClearMode.Auto)
 		{
 			return new ArrayPoolScope<T>(array, pool, clearMode);
@@ -43,6 +44,7 @@ namespace Hertzole.Buffers
 		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
 		/// <typeparam name="T">The type of the objects that are in the resource pool.</typeparam>
 		/// <returns>An ArrayPoolScope of type T[].</returns>
+		/// <exception cref="ArgumentNullException">If the list is null.</exception>
 		public static ArrayPoolScope<T> RentScope<T>(this ArrayPool<T> pool, ICollection<T> collection, ArrayClearMode clearMode = ArrayClearMode.Auto)
 		{
 			return new ArrayPoolScope<T>(collection, pool, clearMode);
