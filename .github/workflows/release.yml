@@ -37,3 +37,70 @@ jobs:
           git push origin --tags
         env:
           TAG: package/v${{ steps.semantic.outputs.new_release_version }}
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            5.x
+            6.x
+            7.x
+            8.x
+
+      - name: Add NuGet Source
+        run: dotnet nuget add source --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
+      - name: Pack NuGet Package
+        run: dotnet pack -c Release -o output
+
+      - name: Publish to GitHub packages
+        run: dotnet nuget push output/*.nupkg --skip-duplicate --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+
+      - name: Publish to NuGet
+        run: dotnet nuget push output/*.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
+      - name: Create UPM package
+        run: |
+          git branch -d upm &> /dev/null || echo upm branch not found
+          git subtree split -P "$PKG_ROOT" -b upm
+          if [[ -d "Assets/Samples" ]]; then
+            mv "Assets/Samples" /tmp/example
+          fi
+          if [[ -f "CHANGELOG.md" ]]; then
+            mv CHANGELOG.md /tmp/CHANGELOG.md
+          fi
+          if [[ -f "LICENSE" ]]; then
+            mv LICENSE /tmp/LICENSE
+          fi
+          if [[ -f "README.md" ]]; then
+            mv README.md /tmp/README.md
+          fi
+          git checkout upm
+          if [[ -f "/tmp/README.md" ]]; then
+            mv /tmp/README.md README.md
+            git add README.md
+          fi
+          if [[ -d "/tmp/example" ]]; then
+            mkdir "Samples~"
+            mv /tmp/example/* "Samples~/"
+            git add "Samples~"
+          fi
+          if [[ -f "/tmp/CHANGELOG.md" ]]; then
+            mv /tmp/CHANGELOG.md CHANGELOG.md
+            git add CHANGELOG.md
+          fi
+          if [[ -f "/tmp/LICENSE" ]]; then
+            mv /tmp/LICENSE LICENSE
+            git add LICENSE
+          fi
+          if [[ -d "Tests" ]]; then
+            rm -rf Tests
+            rm -f Tests.meta
+          fi
+          git config --global user.name 'github-bot'
+          git config --global user.email 'github-bot@users.noreply.github.com'
+          git commit -am "chore: create upm package"
+          git push -f -u origin upm
+        env:
+          PKG_ROOT: "Unity/Packages/se.hertzole.array-pool-scope"
+        shell: bash
