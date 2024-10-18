@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/Hertzole/array-pool-scope/compare/v2.0.0...v2.0.1) (2024-10-18)
+
+
+### Bug Fixes
+
+* unity meta files not being generated ([d65dd56](https://github.com/Hertzole/array-pool-scope/commit/d65dd5678d5a355c821c23132d8863f66c190dbf))
+
 # [2.0.0](https://github.com/Hertzole/array-pool-scope/compare/v1.1.0...v2.0.0) (2024-09-24)
 
 

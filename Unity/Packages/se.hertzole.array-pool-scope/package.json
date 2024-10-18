@@ -1,6 +1,6 @@
 {
   "name": "se.hertzole.array-pool-scope",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "displayName": "Array Pool Scope",
   "description": "Array Pool Scope allows you to use ArrayPool in a scope-like manner.",
   "unity": "2021.3",
