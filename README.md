@@ -2,6 +2,16 @@
 
 Array Pool Scope allows you to use ArrayPool in a scope-like manner.
 
+## 🌟 Features
+- 🚀 **Fast and Safe** - Use `ArrayPool` in a scope-like manner using readonly structs with no allocations!
+- ✂ **Fully trimmable and AOT compatible** - No reflection or dynamic code is used, making it fully compatible with AOT platforms like NativeAOT and IL2CPP!
+- 🌐 **Wide range of .NET support** - Supports .NET Standard 1.1 and up, including .NET Framework 4.6.1, .NET 5+ and even Unity!
+- ✅ **100% test coverage** - All code is tested to make sure it works as expected!
+- 🗑 **Almost zero allocations** - The library is designed to be as allocation-free as possible!¹
+- 📕 **Fully documented** - Every public member is documented with XML docs to make it easy to understand how to use the library!
+
+¹ `Sort(Comparison<T>)` will allocate a small amount of memory in anything below .NET 5 due to the lack of efficient sorting methods. 
+
 ## 💨 Quick Start
 
 ```csharp
@@ -14,8 +24,8 @@ using (ArrayPoolScope<int> pool = new ArrayPoolScope<int>(length))
     // For loop
     for (int i = 0; i < pool.Length; i++)
     {
-        pool.Array[i] = i;
-        Console.WriteLine(pool.Array[i]);
+        pool[i] = i;
+        Console.WriteLine(pool[i]);
     }
 
     // Foreach loop
@@ -33,13 +43,21 @@ pool.Dispose();
 ArrayPool<int> customPool = ArrayPool<int>.Create();
 using ArrayPoolScope<int> pool = new ArrayPoolScope<int>(length, customPool);
 
-// Get directly from pool
-using ArrayPoolScope<int> pool = ArrayPool<int>.RentScope(length);
+// Get directly from pool.
+using ArrayPoolScope<int> pool = ArrayPool<int>.Shared.RentScope(length);
 
-// As span and memory
-using ArrayPoolScope<int> pool = ArrayPool<int>.RentScope(length);
+// As span and memory.
+using ArrayPoolScope<int> pool = ArrayPool<int>.Shared.RentScope(length);
 Span<int> span = pool.AsSpan();
 Memory<int> memory = pool.AsMemory();
+
+// Control how the array is cleared when disposed.
+ArrayClearMode clearMode = ArrayClearMode.Auto; // Auto, Always, Never
+using ArrayPoolScope<int> pool = new ArrayPoolScope<int>(length, clearMode);
+
+// Get the array directly if needed. (you should avoid this, unless you really need the array)
+using ArrayPoolScope<int> pool = ArrayPool<int>.Shared.RentScope(length);
+int[] array = UnsafeArrayPool.GetArray(pool);
 ```
 
 ## 📦 Installation
