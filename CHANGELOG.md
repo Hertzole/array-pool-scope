@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/Hertzole/array-pool-scope/compare/v2.0.1...v2.1.0) (2024-10-25)
+
+
+### Features
+
+* create ArrayPool from IEnumerable ([8aeee1e](https://github.com/Hertzole/array-pool-scope/commit/8aeee1ee7072cfd3ce8b27d9e76947ef09a462a5))
+
 ## [2.0.1](https://github.com/Hertzole/array-pool-scope/compare/v2.0.0...v2.0.1) (2024-10-18)
 
 
