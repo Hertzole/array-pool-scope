@@ -2,6 +2,7 @@ using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Hertzole.Buffers;
 using NUnit.Framework;
 
@@ -263,6 +264,78 @@ namespace ArrayPoolScope.Tests
 		{
 			// Assert
 			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>(new int[1].AsMemory(), null!));
+		}
+
+		[Test]
+		public void CreateFromIEnumerable_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
+		{
+			// Arrange
+			List<int> list = new List<int>(length);
+			for (int i = 0; i < length; i++)
+			{
+				list.Add(random.Next(int.MinValue, int.MaxValue));
+			}
+
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>((IEnumerable<int>) list, clearArray);
+
+			// Assert
+			Assert.That(scope, Has.Length.EqualTo(length));
+			Assert.That(scope, Is.EquivalentTo(list));
+			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
+		}
+
+		[Test]
+		public void CreateFromIEnumerable_WithPool_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
+		{
+			// Arrange
+			List<int> list = new List<int>(length);
+			for (int i = 0; i < length; i++)
+			{
+				list.Add(random.Next(int.MinValue, int.MaxValue));
+			}
+
+			ArrayPool<int> pool = ArrayPool<int>.Create();
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>((IEnumerable<int>) list, pool, clearArray);
+
+			// Assert
+			Assert.That(scope, Has.Length.EqualTo(length));
+			Assert.That(scope, Is.EquivalentTo(list));
+			Assert.That(scope.pool, Is.SameAs(pool));
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
+		}
+
+		[Test]
+		public void CreateFromIEnumerable_PureEnumerable_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length,
+			[Values] ArrayClearMode clearArray)
+		{
+			// Arrange
+			IEnumerable<int> enumerable = Enumerable.Range(0, length);
+
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(enumerable, clearArray);
+
+			// Assert
+			Assert.That(scope, Has.Length.EqualTo(length));
+			Assert.That(scope, Is.EquivalentTo(enumerable));
+			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
+		}
+
+		[Test]
+		public void CreateFromIEnumerable_NullEnumerable_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>((IEnumerable<int>) null!));
+		}
+
+		[Test]
+		public void CreateFromIEnumerable_NullPool_ThrowsException()
+		{
+			// Assert
+			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>((IEnumerable<int>) new List<int>(), null!));
 		}
 
 		[Test]
@@ -916,58 +989,61 @@ namespace ArrayPoolScope.Tests
 		public void Dispose_ClearModeAuto_SimpleStruct_DoesNotClear()
 		{
 			// Arrange
-			ArrayPoolScope<TestStruct> scope = new ArrayPoolScope<TestStruct>(100, ArrayClearMode.Auto);
+			ArrayPoolScope<TestStruct> scope = new ArrayPoolScope<TestStruct>(100);
 			for (int i = 0; i < scope.Length; i++)
 			{
 				scope[i] = new TestStruct { value = i };
 			}
+
 			TestStruct[] array = scope.array;
-			
+
 			// Act
 			scope.Dispose();
-			
+
 			// Assert
 			for (int i = 0; i < 100; i++)
 			{
 				Assert.That(array[i].value, Is.EqualTo(i));
 			}
 		}
-		
+
 		[Test]
 		public void Dispose_ClearModeAuto_StructWithReference_Clears()
 		{
 			// Arrange
-			ArrayPoolScope<TestStructWithReference> scope = new ArrayPoolScope<TestStructWithReference>(100, ArrayClearMode.Auto);
+			ArrayPoolScope<TestStructWithReference> scope = new ArrayPoolScope<TestStructWithReference>(100);
 			for (int i = 0; i < scope.Length; i++)
 			{
 				scope[i] = new TestStructWithReference { value = i };
 			}
+
 			TestStructWithReference[] array = scope.array;
-			
+
 			// Act
 			scope.Dispose();
-			
+
 			// Assert
 			for (int i = 0; i < 100; i++)
 			{
 				Assert.That(array[i], Is.EqualTo(default(TestStructWithReference)));
 			}
 		}
-		
+
 		[Test]
 		public void Dispose_ClearModeAuto_Class_Clears()
 		{
 			// Arrange
-			ArrayPoolScope<TestClass> scope = new ArrayPoolScope<TestClass>(100, ArrayClearMode.Auto);
+			ArrayPoolScope<TestClass> scope = new ArrayPoolScope<TestClass>(100);
 			for (int i = 0; i < scope.Length; i++)
 			{
 				scope[i] = new TestClass { value = i };
 			}
+
 			TestClass[] array = scope.array;
-			
+
 			// Act
 			scope.Dispose();
-			
+
 			// Assert
 			for (int i = 0; i < 100; i++)
 			{
