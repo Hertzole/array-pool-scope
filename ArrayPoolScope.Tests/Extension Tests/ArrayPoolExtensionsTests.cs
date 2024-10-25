@@ -108,5 +108,26 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 			Assert.That(scope, Is.EquivalentTo(array));
 		}
+
+		[Test]
+		public void RentScopeFromPool_IEnumerable_ReturnsCorrectLengthAndPool([Values] ArrayClearMode clearArray, [Values(1, 10, 100)] int length)
+		{
+			// Arrange
+			ArrayPool<int> pool = ArrayPool<int>.Shared;
+			int[] array = new int[length];
+			for (int i = 0; i < length; i++)
+			{
+				array[i] = random.Next();
+			}
+
+			// Act
+			using ArrayPoolScope<int> scope = pool.RentScope((IEnumerable<int>) array, clearArray);
+
+			// Assert
+			Assert.That(scope, Has.Length.EqualTo(length));
+			Assert.That(scope.pool, Is.SameAs(pool));
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That(scope, Is.EquivalentTo(array));
+		}
 	}
 }

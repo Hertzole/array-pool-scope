@@ -75,5 +75,23 @@ namespace Hertzole.Buffers
 		{
 			return new ArrayPoolScope<T>(memory, pool, clearMode);
 		}
+
+		/// <summary>
+		///     Creates a new ArrayPoolScope based on the given enumerable.
+		/// </summary>
+		/// <remarks>
+		///     This will most likely allocate due to converting the enumerable to an array. Consider checking the type before
+		///     calling this and use the other constructors.
+		/// </remarks>
+		/// <param name="pool">The pool to rent from.</param>
+		/// <param name="enumerable">The enumerable to copy from.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
+		/// <typeparam name="T">The type of the objects that are in the resource pool.</typeparam>
+		/// <returns>An ArrayPoolScope of type T[].</returns>
+		/// <exception cref="ArgumentNullException">If the enumerable is null.</exception>
+		public static ArrayPoolScope<T> RentScope<T>(this ArrayPool<T> pool, IEnumerable<T> enumerable, ArrayClearMode clearMode = ArrayClearMode.Auto)
+		{
+			return new ArrayPoolScope<T>(enumerable, pool, clearMode);
+		}
 	}
 }
