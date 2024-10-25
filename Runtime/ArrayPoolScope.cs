@@ -6,6 +6,7 @@ using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Hertzole.Buffers
 {
@@ -158,6 +159,46 @@ namespace Hertzole.Buffers
 		/// <exception cref="ArgumentNullException">If the pool is null.</exception>
 		public ArrayPoolScope(ReadOnlyMemory<T> memory, ArrayPool<T> pool, ArrayClearMode clearMode = ArrayClearMode.Auto) :
 			this(memory.Span, pool, clearMode) { }
+
+		/// <summary>
+		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source enumerable
+		///     to the new pooled array. It will use the <see cref="ArrayPool{T}.Shared" /> pool.
+		/// </summary>
+		/// <remarks>
+		///     This will most likely allocate due to converting the enumerable to an array. Consider checking the type before
+		///     calling this and use the other constructors.
+		/// </remarks>
+		/// <param name="enumerable">The source enumerable that will be copied from.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
+		/// <exception cref="ArgumentNullException">If the enumerable is null.</exception>
+		public ArrayPoolScope(IEnumerable<T> enumerable, ArrayClearMode clearMode = ArrayClearMode.Auto)
+		{
+			ThrowHelper.ThrowIfNull(enumerable, nameof(enumerable));
+
+			this = new ArrayPoolScope<T>(enumerable.ToArray(), ArrayPool<T>.Shared, clearMode);
+		}
+
+		/// <summary>
+		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source enumerable
+		///     to the new pooled array.
+		/// </summary>
+		/// <remarks>
+		///     This will most likely allocate due to converting the enumerable to an array. Consider checking the type before
+		///     calling this and use the other constructors.
+		/// </remarks>
+		/// <param name="enumerable">The source enumerable that will be copied from.</param>
+		/// <param name="pool">The pool to get the array from.</param>
+		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
+		/// <exception cref="ArgumentNullException">If the enumerable is null.</exception>
+		/// <exception cref="ArgumentNullException">If the pool is null.</exception>
+		public ArrayPoolScope(IEnumerable<T> enumerable, ArrayPool<T> pool, ArrayClearMode clearMode = ArrayClearMode.Auto)
+		{
+			ThrowHelper.ThrowIfNull(enumerable, nameof(enumerable));
+			ThrowHelper.ThrowIfNull(pool, nameof(pool));
+
+			// This is the best I can do it for now. Hopefully it can be improved in .NET 9 with TryGetSpan.
+			this = new ArrayPoolScope<T>(enumerable.ToArray(), pool, clearMode);
+		}
 
 		/// <inheritdoc cref="IReadOnlyList{T}.this" />
 		/// <exception cref="ArgumentOutOfRangeException">If the index is below <c>0</c> or outside the provided length.</exception>
