@@ -113,6 +113,20 @@ namespace Hertzole.Buffers
 			list.CopyTo(array, 0);
 		}
 
+		// This is private because it should not be used, and it will cause ambiguity with the IEnumerable and ICollection<T> constructor.
+		private ArrayPoolScope(ICollection list, ArrayPool<T> pool, ArrayClearMode clearMode = ArrayClearMode.Auto)
+		{
+			ThrowHelper.ThrowIfNull(list, nameof(list));
+			ThrowHelper.ThrowIfNull(pool, nameof(pool));
+
+			Length = list.Count;
+			this.pool = pool;
+			array = this.pool.Rent(Length);
+			this.clearMode = clearMode;
+
+			list.CopyTo(array, 0);
+		}
+
 		/// <summary>
 		///     Creates a new <c>ArrayPoolScope</c> based on an existing array by copying all the values from the source span to
 		///     the new pooled array. It will use the <see cref="ArrayPool{T}.Shared" /> pool.
@@ -165,8 +179,7 @@ namespace Hertzole.Buffers
 		///     to the new pooled array. It will use the <see cref="ArrayPool{T}.Shared" /> pool.
 		/// </summary>
 		/// <remarks>
-		///     This will most likely allocate due to converting the enumerable to an array. Consider checking the type before
-		///     calling this and use the other constructors.
+		///     This will allocate if the enumerable type is not an array, list, or collection.
 		/// </remarks>
 		/// <param name="enumerable">The source enumerable that will be copied from.</param>
 		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
@@ -175,7 +188,7 @@ namespace Hertzole.Buffers
 		{
 			ThrowHelper.ThrowIfNull(enumerable, nameof(enumerable));
 
-			this = new ArrayPoolScope<T>(enumerable.ToArray(), ArrayPool<T>.Shared, clearMode);
+			this = new ArrayPoolScope<T>(enumerable, ArrayPool<T>.Shared, clearMode);
 		}
 
 		/// <summary>
@@ -183,8 +196,7 @@ namespace Hertzole.Buffers
 		///     to the new pooled array.
 		/// </summary>
 		/// <remarks>
-		///     This will most likely allocate due to converting the enumerable to an array. Consider checking the type before
-		///     calling this and use the other constructors.
+		///     This will allocate if the enumerable type is not an array, list, or collection.
 		/// </remarks>
 		/// <param name="enumerable">The source enumerable that will be copied from.</param>
 		/// <param name="pool">The pool to get the array from.</param>
@@ -196,7 +208,27 @@ namespace Hertzole.Buffers
 			ThrowHelper.ThrowIfNull(enumerable, nameof(enumerable));
 			ThrowHelper.ThrowIfNull(pool, nameof(pool));
 
-			// This is the best I can do it for now. Hopefully it can be improved in .NET 9 with TryGetSpan.
+#if NET5_0_OR_GREATER // In anything below .NET 5, we can't get the span from anything other than arrays and lists.
+			// First try to get a span as it's the most efficient way to get the data.
+			if (enumerable.TryGetSpan(out ReadOnlySpan<T> span))
+			{
+				this = new ArrayPoolScope<T>(span, pool, clearMode);
+				return;
+			}
+#endif
+
+			// If we can't get a span, we'll try to get a collection.
+			switch (enumerable)
+			{
+				case ICollection<T> genericCollection:
+					this = new ArrayPoolScope<T>(genericCollection, pool, clearMode);
+					return;
+				case ICollection collection:
+					this = new ArrayPoolScope<T>(collection, pool, clearMode);
+					return;
+			}
+
+			// If we can't get a span or a collection, we'll just copy the enumerable to an array and rent that.
 			this = new ArrayPoolScope<T>(enumerable.ToArray(), pool, clearMode);
 		}
 

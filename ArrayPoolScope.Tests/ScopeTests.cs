@@ -323,6 +323,47 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
+		
+		[Test]
+		public void CreateFromIEnumerable_Collection_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
+		{
+			// Arrange
+			CollectionClass<int> collection = new CollectionClass<int>(length);
+			for (int i = 0; i < length; i++)
+			{
+				collection[i] = random.Next(int.MinValue, int.MaxValue);
+			}
+			
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(collection, clearArray);
+
+			// Assert
+			Assert.That(scope, Has.Length.EqualTo(length));
+			Assert.That(scope, Is.EquivalentTo(collection));
+			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
+		}
+		
+		[Test]
+		public void CreateFromIEnumerable_WithPool_Collection_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
+		{
+			// Arrange
+			CollectionClass<int> collection = new CollectionClass<int>(length);
+			for (int i = 0; i < length; i++)
+			{
+				collection[i] = random.Next(int.MinValue, int.MaxValue);
+			}
+			
+			ArrayPool<int> pool = ArrayPool<int>.Create();
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(collection, pool, clearArray);
+
+			// Assert
+			Assert.That(scope, Has.Length.EqualTo(length));
+			Assert.That(scope, Is.EquivalentTo(collection));
+			Assert.That(scope.pool, Is.SameAs(pool));
+			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
+			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
+		}
 
 		[Test]
 		public void CreateFromIEnumerable_NullEnumerable_ThrowsException()
