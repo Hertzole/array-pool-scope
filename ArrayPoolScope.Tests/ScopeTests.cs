@@ -323,7 +323,7 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
-		
+
 		[Test]
 		public void CreateFromIEnumerable_Collection_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
 		{
@@ -333,7 +333,7 @@ namespace ArrayPoolScope.Tests
 			{
 				collection[i] = random.Next(int.MinValue, int.MaxValue);
 			}
-			
+
 			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(collection, clearArray);
 
 			// Assert
@@ -343,9 +343,10 @@ namespace ArrayPoolScope.Tests
 			Assert.That(scope.clearMode, Is.EqualTo(clearArray));
 			Assert.That(((IReadOnlyCollection<int>) scope).Count, Is.EqualTo(length));
 		}
-		
+
 		[Test]
-		public void CreateFromIEnumerable_WithPool_Collection_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length, [Values] ArrayClearMode clearArray)
+		public void CreateFromIEnumerable_WithPool_Collection_ReturnsArrayWithCorrectLength([Values(1, 5, 16, 30, 100)] int length,
+			[Values] ArrayClearMode clearArray)
 		{
 			// Arrange
 			CollectionClass<int> collection = new CollectionClass<int>(length);
@@ -353,7 +354,7 @@ namespace ArrayPoolScope.Tests
 			{
 				collection[i] = random.Next(int.MinValue, int.MaxValue);
 			}
-			
+
 			ArrayPool<int> pool = ArrayPool<int>.Create();
 			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(collection, pool, clearArray);
 
@@ -377,6 +378,19 @@ namespace ArrayPoolScope.Tests
 		{
 			// Assert
 			Assert.Throws<ArgumentNullException>(() => _ = new ArrayPoolScope<int>((IEnumerable<int>) new List<int>(), null!));
+		}
+
+		[Test]
+		public void Create_ZeroLength_ReturnsEmptyArray()
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = new ArrayPoolScope<int>(0);
+
+			// Assert
+			Assert.That(scope, Is.Empty);
+			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
+			Assert.That(scope.Length, Is.EqualTo(0));
+			Assert.That(scope.array, Is.SameAs(ArrayPoolScope<int>.emptyArray));
 		}
 
 		[Test]

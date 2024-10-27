@@ -20,6 +20,12 @@ namespace Hertzole.Buffers
 		internal readonly ArrayPool<T> pool;
 		internal readonly ArrayClearMode clearMode;
 
+#if NETSTANDARD1_3_OR_GREATER || NETCOREAPP1_0_OR_GREATER || NET5_0_OR_GREATER
+		internal static readonly T[] emptyArray = Array.Empty<T>();
+#else
+		internal static readonly T[] emptyArray = new T[0];
+#endif
+
 		/// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
 		public int Length { get; }
 
@@ -49,8 +55,10 @@ namespace Hertzole.Buffers
 
 			Length = length;
 			this.pool = pool;
-			array = this.pool.Rent(length);
 			this.clearMode = clearMode;
+
+			// If the length is 0, we'll just return an empty array.
+			array = length == 0 ? emptyArray : this.pool.Rent(length);
 		}
 
 		/// <summary>
@@ -73,14 +81,13 @@ namespace Hertzole.Buffers
 		public ArrayPoolScope(T[] array, ArrayPool<T> pool, ArrayClearMode clearMode = ArrayClearMode.Auto)
 		{
 			ThrowHelper.ThrowIfNull(array, nameof(array));
-			ThrowHelper.ThrowIfNull(pool, nameof(pool));
 
-			Length = array.Length;
-			this.pool = pool;
-			this.array = this.pool.Rent(Length);
-			this.clearMode = clearMode;
+			this = new ArrayPoolScope<T>(array.Length, pool, clearMode);
 
-			Array.Copy(array, this.array, Length);
+			if (array.Length > 0)
+			{
+				Array.Copy(array, this.array, Length);
+			}
 		}
 
 		/// <summary>
@@ -103,14 +110,13 @@ namespace Hertzole.Buffers
 		public ArrayPoolScope(ICollection<T> list, ArrayPool<T> pool, ArrayClearMode clearMode = ArrayClearMode.Auto)
 		{
 			ThrowHelper.ThrowIfNull(list, nameof(list));
-			ThrowHelper.ThrowIfNull(pool, nameof(pool));
 
-			Length = list.Count;
-			this.pool = pool;
-			array = this.pool.Rent(Length);
-			this.clearMode = clearMode;
+			this = new ArrayPoolScope<T>(list.Count, pool, clearMode);
 
-			list.CopyTo(array, 0);
+			if (list.Count > 0)
+			{
+				list.CopyTo(array, 0);
+			}
 		}
 
 		// This is private because it should not be used, and it will cause ambiguity with the IEnumerable and ICollection<T> constructor.
@@ -119,12 +125,12 @@ namespace Hertzole.Buffers
 			ThrowHelper.ThrowIfNull(list, nameof(list));
 			ThrowHelper.ThrowIfNull(pool, nameof(pool));
 
-			Length = list.Count;
-			this.pool = pool;
-			array = this.pool.Rent(Length);
-			this.clearMode = clearMode;
+			this = new ArrayPoolScope<T>(list.Count, pool, clearMode);
 
-			list.CopyTo(array, 0);
+			if (list.Count > 0)
+			{
+				list.CopyTo(array, 0);
+			}
 		}
 
 		/// <summary>
@@ -147,12 +153,12 @@ namespace Hertzole.Buffers
 		{
 			ThrowHelper.ThrowIfNull(pool, nameof(pool));
 
-			Length = span.Length;
-			this.pool = pool;
-			array = this.pool.Rent(Length);
-			this.clearMode = clearMode;
+			this = new ArrayPoolScope<T>(span.Length, pool, clearMode);
 
-			span.CopyTo(array);
+			if (span.Length > 0)
+			{
+				span.CopyTo(array);
+			}
 		}
 
 		/// <summary>
@@ -466,6 +472,12 @@ namespace Hertzole.Buffers
 		/// </summary>
 		public void Dispose()
 		{
+			// If the array is empty there's nothing to return.
+			if (Length == 0)
+			{
+				return;
+			}
+
 			pool.Return(array, ArrayPoolScopeHelpers.ShouldClear<T>(clearMode));
 		}
 
