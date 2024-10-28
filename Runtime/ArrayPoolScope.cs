@@ -20,6 +20,12 @@ namespace Hertzole.Buffers
 		internal readonly ArrayPool<T> pool;
 		internal readonly ArrayClearMode clearMode;
 
+#if NETSTANDARD1_3_OR_GREATER || NETCOREAPP1_0_OR_GREATER || NET5_0_OR_GREATER
+		internal static readonly T[] emptyArray = Array.Empty<T>();
+#else
+		internal static readonly T[] emptyArray = new T[0];
+#endif
+
 		/// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
 		public int Length { get; }
 
@@ -27,6 +33,11 @@ namespace Hertzole.Buffers
 		{
 			get { return Length; }
 		}
+
+		/// <summary>
+		///     An empty <c>ArrayPoolScope</c> with a length of <c>0</c>.
+		/// </summary>
+		public static ArrayPoolScope<T> Empty { get; } = new ArrayPoolScope<T>(0);
 
 		/// <summary>
 		///     Creates a new <c>ArrayPoolScope</c> with the given length from a pool. It will use the
@@ -49,8 +60,10 @@ namespace Hertzole.Buffers
 
 			Length = length;
 			this.pool = pool;
-			array = this.pool.Rent(length);
 			this.clearMode = clearMode;
+
+			// If the length is 0, we'll just return an empty array.
+			array = length == 0 ? emptyArray : this.pool.Rent(length);
 		}
 
 		/// <summary>
@@ -73,14 +86,13 @@ namespace Hertzole.Buffers
 		public ArrayPoolScope(T[] array, ArrayPool<T> pool, ArrayClearMode clearMode = ArrayClearMode.Auto)
 		{
 			ThrowHelper.ThrowIfNull(array, nameof(array));
-			ThrowHelper.ThrowIfNull(pool, nameof(pool));
 
-			Length = array.Length;
-			this.pool = pool;
-			this.array = this.pool.Rent(Length);
-			this.clearMode = clearMode;
+			this = new ArrayPoolScope<T>(array.Length, pool, clearMode);
 
-			Array.Copy(array, this.array, Length);
+			if (array.Length > 0)
+			{
+				Array.Copy(array, this.array, Length);
+			}
 		}
 
 		/// <summary>
@@ -103,14 +115,27 @@ namespace Hertzole.Buffers
 		public ArrayPoolScope(ICollection<T> list, ArrayPool<T> pool, ArrayClearMode clearMode = ArrayClearMode.Auto)
 		{
 			ThrowHelper.ThrowIfNull(list, nameof(list));
+
+			this = new ArrayPoolScope<T>(list.Count, pool, clearMode);
+
+			if (list.Count > 0)
+			{
+				list.CopyTo(array, 0);
+			}
+		}
+
+		// This is private because it should not be used, and it will cause ambiguity with the IEnumerable and ICollection<T> constructor.
+		private ArrayPoolScope(ICollection list, ArrayPool<T> pool, ArrayClearMode clearMode = ArrayClearMode.Auto)
+		{
+			ThrowHelper.ThrowIfNull(list, nameof(list));
 			ThrowHelper.ThrowIfNull(pool, nameof(pool));
 
-			Length = list.Count;
-			this.pool = pool;
-			array = this.pool.Rent(Length);
-			this.clearMode = clearMode;
+			this = new ArrayPoolScope<T>(list.Count, pool, clearMode);
 
-			list.CopyTo(array, 0);
+			if (list.Count > 0)
+			{
+				list.CopyTo(array, 0);
+			}
 		}
 
 		/// <summary>
@@ -133,12 +158,12 @@ namespace Hertzole.Buffers
 		{
 			ThrowHelper.ThrowIfNull(pool, nameof(pool));
 
-			Length = span.Length;
-			this.pool = pool;
-			array = this.pool.Rent(Length);
-			this.clearMode = clearMode;
+			this = new ArrayPoolScope<T>(span.Length, pool, clearMode);
 
-			span.CopyTo(array);
+			if (span.Length > 0)
+			{
+				span.CopyTo(array);
+			}
 		}
 
 		/// <summary>
@@ -165,8 +190,7 @@ namespace Hertzole.Buffers
 		///     to the new pooled array. It will use the <see cref="ArrayPool{T}.Shared" /> pool.
 		/// </summary>
 		/// <remarks>
-		///     This will most likely allocate due to converting the enumerable to an array. Consider checking the type before
-		///     calling this and use the other constructors.
+		///     This will allocate if the enumerable type is not an array, list, or collection.
 		/// </remarks>
 		/// <param name="enumerable">The source enumerable that will be copied from.</param>
 		/// <param name="clearMode">Determines if the array should be cleared when returning it to the pool.</param>
@@ -175,7 +199,7 @@ namespace Hertzole.Buffers
 		{
 			ThrowHelper.ThrowIfNull(enumerable, nameof(enumerable));
 
-			this = new ArrayPoolScope<T>(enumerable.ToArray(), ArrayPool<T>.Shared, clearMode);
+			this = new ArrayPoolScope<T>(enumerable, ArrayPool<T>.Shared, clearMode);
 		}
 
 		/// <summary>
@@ -183,8 +207,7 @@ namespace Hertzole.Buffers
 		///     to the new pooled array.
 		/// </summary>
 		/// <remarks>
-		///     This will most likely allocate due to converting the enumerable to an array. Consider checking the type before
-		///     calling this and use the other constructors.
+		///     This will allocate if the enumerable type is not an array, list, or collection.
 		/// </remarks>
 		/// <param name="enumerable">The source enumerable that will be copied from.</param>
 		/// <param name="pool">The pool to get the array from.</param>
@@ -196,7 +219,27 @@ namespace Hertzole.Buffers
 			ThrowHelper.ThrowIfNull(enumerable, nameof(enumerable));
 			ThrowHelper.ThrowIfNull(pool, nameof(pool));
 
-			// This is the best I can do it for now. Hopefully it can be improved in .NET 9 with TryGetSpan.
+#if NET5_0_OR_GREATER // In anything below .NET 5, we can't get the span from anything other than arrays and lists.
+			// First try to get a span as it's the most efficient way to get the data.
+			if (enumerable.TryGetSpan(out ReadOnlySpan<T> span))
+			{
+				this = new ArrayPoolScope<T>(span, pool, clearMode);
+				return;
+			}
+#endif
+
+			// If we can't get a span, we'll try to get a collection.
+			switch (enumerable)
+			{
+				case ICollection<T> genericCollection:
+					this = new ArrayPoolScope<T>(genericCollection, pool, clearMode);
+					return;
+				case ICollection collection:
+					this = new ArrayPoolScope<T>(collection, pool, clearMode);
+					return;
+			}
+
+			// If we can't get a span or a collection, we'll just copy the enumerable to an array and rent that.
 			this = new ArrayPoolScope<T>(enumerable.ToArray(), pool, clearMode);
 		}
 
@@ -434,6 +477,12 @@ namespace Hertzole.Buffers
 		/// </summary>
 		public void Dispose()
 		{
+			// If the array is empty there's nothing to return.
+			if (Length == 0)
+			{
+				return;
+			}
+
 			pool.Return(array, ArrayPoolScopeHelpers.ShouldClear<T>(clearMode));
 		}
 
