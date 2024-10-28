@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/Hertzole/array-pool-scope/compare/v2.2.0...v2.2.1) (2024-10-28)
+
+
+### Bug Fixes
+
+* release workflow ([353a9c1](https://github.com/Hertzole/array-pool-scope/commit/353a9c1c2f806df0ab973b2d142a630866412654))
+
 # [2.2.0](https://github.com/Hertzole/array-pool-scope/compare/v2.1.0...v2.2.0) (2024-10-28)
 
 
