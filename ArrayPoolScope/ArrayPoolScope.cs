@@ -35,6 +35,11 @@ namespace Hertzole.Buffers
 		}
 
 		/// <summary>
+		///     An empty <c>ArrayPoolScope</c> with a length of <c>0</c>.
+		/// </summary>
+		public static ArrayPoolScope<T> Empty { get; } = new ArrayPoolScope<T>(0);
+
+		/// <summary>
 		///     Creates a new <c>ArrayPoolScope</c> with the given length from a pool. It will use the
 		///     <see cref="ArrayPool{T}.Shared" /> pool.
 		/// </summary>

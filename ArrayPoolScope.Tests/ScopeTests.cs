@@ -394,6 +394,19 @@ namespace ArrayPoolScope.Tests
 		}
 
 		[Test]
+		public void Empty_ReturnsEmptyArray()
+		{
+			// Arrange
+			using ArrayPoolScope<int> scope = ArrayPoolScope<int>.Empty;
+
+			// Assert
+			Assert.That(scope, Is.Empty);
+			Assert.That(scope.pool, Is.SameAs(ArrayPool<int>.Shared));
+			Assert.That(scope.Length, Is.EqualTo(0));
+			Assert.That(scope.array, Is.SameAs(ArrayPoolScope<int>.emptyArray));
+		}
+
+		[Test]
 		public void GetSetIndexer_ReturnsCorrectValue([Values(1, 5, 16, 30, 100)] int length)
 		{
 			// Arrange
