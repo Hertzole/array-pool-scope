@@ -1,3 +1,16 @@
+# [2.2.0](https://github.com/Hertzole/array-pool-scope/compare/v2.1.0...v2.2.0) (2024-10-28)
+
+
+### Features
+
+* ArrayPoolScope<T>.Empty for quick access to an empty array ([cbb0e2f](https://github.com/Hertzole/array-pool-scope/commit/cbb0e2f94412398c78a3a78e23a6af4837be5798))
+
+
+### Performance Improvements
+
+* if length is 0 use an empty array ([0405fdf](https://github.com/Hertzole/array-pool-scope/commit/0405fdfa47af8d7a05f35744da761ccb2d912e69))
+* try to get span and collections from enumerable before converting to array ([25342a5](https://github.com/Hertzole/array-pool-scope/commit/25342a5f0633c34542e039ba914c5ec817efaa31))
+
 # [2.1.0](https://github.com/Hertzole/array-pool-scope/compare/v2.0.1...v2.1.0) (2024-10-25)
 
 
