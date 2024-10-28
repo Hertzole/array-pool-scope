@@ -1,11 +1,8 @@
 name: Release Workflow
 
 on:
-  workflow_run:
-    workflows: ["Test and Sync Unity Project"]
+  push:
     branches: ["master"]
-    types:
-      - completed
 
 jobs:
   release:
